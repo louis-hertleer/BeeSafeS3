@@ -1,0 +1,44 @@
+name: Provision Infrastructure with OpenTofu (Azure)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up OpenTofu
+      - name: Set up OpenTofu
+        run: |
+          curl -L https://github.com/opentofu/opentofu/releases/latest/download/opentofu_linux_amd64 -o /usr/local/bin/opentofu
+          chmod +x /usr/local/bin/opentofu
+
+      # Step 3: Log in to Azure
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Step 4: Initialize OpenTofu
+      - name: OpenTofu Init
+        run: opentofu init
+
+      # Step 5: Apply OpenTofu configuration
+      - name: OpenTofu Apply
+        run: opentofu apply -auto-approve
+        env:
+          TF_VAR_compute_instance: "example-instance"
+          TF_VAR_database_name: "example-database"
+          TF_VAR_api_endpoint: "example-api"
+
+      # Optional: Verify the API deployment
+      - name: Verify API
+        run: curl -X GET https://${{ env.TF_VAR_api_endpoint }}
