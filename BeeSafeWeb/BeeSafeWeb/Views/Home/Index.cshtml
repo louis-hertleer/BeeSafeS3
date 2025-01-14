@@ -1,10 +1,12 @@
 ﻿@{
 ViewData["Title"] = "Home Page";
-ViewData["BigTitle"] = "Overview";
 }
 <div class="container mx-auto mt-6">
-    <div class="flex justify-center">
-        <div class="flex flex-wrap lg:flex-nowrap items-center gap-8">
+    <div class="flex justify-left mb-2">
+        <h1 class="text-5xl font-bold text-gray-800">Overview:</h1>
+    </div>
+    <div class="flex justify-center ">
+        <div class="flex flex-wrap lg:flex-nowrap items-center gap-8 p-12 rounded-lg">
             
             <div id="map" class="w-full h-[50vh] max-w-xl border rounded-md shadow-md"></div>
 
@@ -18,22 +20,16 @@ ViewData["BigTitle"] = "Overview";
                         Accuracy radius: 13 meters
                     </p>
                 </div>
-                <div class="bg-gray-100 p-4 rounded-md shadow-md border">
+                <div class="bg-gray-100 p-4 rounded-md shadow-md border device-info">
                     <h3 class="text-xl font-bold text-gray-800">Device Info</h3>
-                    <p class="text-gray-600 mt-2">
-                        Status: Online
-                    </p>
-                    <p class="text-gray-600 mt-2">
-                        Current mode: <b>Tracking</b>
-                    </p>
-                    <p class="text-gray-600 mt-2">
-                        Defense mode: <b>Enabled</b>
-                    </p>
+                    <p class="text-gray-600 mt-2">Click on a device marker to see details.</p>
                 </div>
+
             </div>
         </div>
     </div>
 </div>
+
 
 @section Scripts
 {
@@ -46,18 +42,35 @@ ViewData["BigTitle"] = "Overview";
     }).addTo(map);
 
     // hornet nest radius 
-    var circle = L.circle([51.168500, 4.980980], { 
+    var circle = L.circle([51.168500, 4.980980], {
         color: 'red',
         fillColor: '#f03',
         fillOpacity: 0.5,
-        radius: 10 
-    }).addTo(map).bindPopup('Accuracy 10m');
+        radius: 13
+    }).addTo(map).bindPopup('Accuracy 13m');
 
-    // Markers of device location
-    var marker1 = L.marker([51.168100, 4.980800]).addTo(map).bindPopup('Device 1'); 
-    var marker2 = L.marker([51.168100, 4.980980]).addTo(map).bindPopup('Device 2'); 
-    var marker3 = L.marker([51.168100, 4.981200]).addTo(map).bindPopup('Device 3'); 
+    // Create markers with associated device data
+    var devices = [
+        { id: 1, lat: 51.168100, lng: 4.980800, status: "Online", mode: "Tracking", defense: "Enabled" },
+        { id: 2, lat: 51.168100, lng: 4.980980, status: "Offline", mode: "Idle", defense: "Disabled" },
+        { id: 3, lat: 51.168100, lng: 4.981200, status: "Online", mode: "Defense", defense: "Enabled" }
+    ];
+
+    devices.forEach(device => {
+        var marker = L.marker([device.lat, device.lng]).addTo(map).bindPopup(`Device ${device.id}`);
+        marker.on('click', function () {
+            // Update the device info box
+            document.querySelector('.device-info').innerHTML = `
+                <h3 class="text-xl font-bold text-gray-800">Device Info</h3>
+                <p class="text-gray-600 mt-2">Status: ${device.status}</p>
+                <p class="text-gray-600 mt-2">Current mode: <b>${device.mode}</b></p>
+                <p class="text-gray-600 mt-2">Defense mode: <b>${device.defense}</b></p>
+            `;
+        });
+    });
 </script>
-
-
 }
+
+
+
+

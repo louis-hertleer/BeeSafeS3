@@ -1,4 +1,6 @@
+using BeeSafeWeb.Authentication;
 using BeeSafeWeb.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,7 +16,14 @@ builder.Services.AddDbContext<BeeSafeContext>(options =>
 });
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Auth/Login";
+    });
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
