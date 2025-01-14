@@ -1,8 +1,47 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+ViewData["Title"] = "Home Page";
+ViewData["BigTitle"] = "Overview";
 }
+<div class="container mx-auto mt-6">
+    <div class="flex justify-center">
+        <div class="flex flex-wrap lg:flex-nowrap items-center gap-8">
+            
+            <div id="map" class="w-full h-[50vh] max-w-xl border rounded-md shadow-md"></div>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+            <div class="flex flex-col gap-4 w-full max-w-sm">
+                <div class="bg-gray-100 p-4 rounded-md shadow-md border">
+                    <h3 class="text-xl font-bold text-gray-800">Info</h3>
+                    <p class="text-gray-600 mt-2">
+                        Online devices: 3
+                    </p>
+                    <p class="text-gray-600 mt-2">
+                        Accuracy radius: 13 meters
+                    </p>
+                </div>
+                <div class="bg-gray-100 p-4 rounded-md shadow-md border">
+                    <h3 class="text-xl font-bold text-gray-800">Device Info</h3>
+                    <p class="text-gray-600 mt-2">
+                        Status: Online
+                    </p>
+                    <p class="text-gray-600 mt-2">
+                        Current mode: <b>Tracking</b>
+                    </p>
+                    <p class="text-gray-600 mt-2">
+                        Defense mode: <b>Enabled</b>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts
+{
+<script>
+    var map = L.map('map').setView([51.505, -0.09], 13);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+</script>
+}
