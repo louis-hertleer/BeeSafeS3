@@ -48,9 +48,9 @@ jobs:
       - name: Deploy Container to Azure
         run: |
           az containerapp create \
-            --name beesafe-api \
-            --resource-group Beesafe \
-            --environment caer0937870Terraform \
+            --name beesafe-app \
+            --resource-group BeeSafe \
+            --environment caebeesafe \
             --image ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest \
             --cpu 0.5 \
             --memory 1.0Gi \
