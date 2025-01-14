@@ -1,44 +1,72 @@
-name: Provision Infrastructure with OpenTofu (Azure)
+name: Deploy to Azure
 
 on:
   push:
     branches:
+      - main  # Trigger on pushes to the main branch
+  pull_request:  # Optional: Test changes in PRs
+    branches:
       - main
-  workflow_dispatch:
 
 jobs:
-  provision:
+  build-and-push:
+    name: Build and Push Docker Image
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out the code
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Step 2: Set up OpenTofu
-      - name: Set up OpenTofu
-        run: |
-          curl -L https://github.com/opentofu/opentofu/releases/latest/download/opentofu_linux_amd64 -o /usr/local/bin/opentofu
-          chmod +x /usr/local/bin/opentofu
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Step 3: Log in to Azure
-      - name: Azure Login
+      - name: Build Docker Image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest ./api
+
+      - name: Push Docker Image to DockerHub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest
+
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    needs: build-and-push  # Depends on the previous job
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Log in to Azure CLI
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Step 4: Initialize OpenTofu
-      - name: OpenTofu Init
-        run: opentofu init
+      - name: Deploy Container to Azure
+        run: |
+          az containerapp create \
+            --name beesafe-api \
+            --resource-group RGr0937870Terraform \
+            --environment caer0937870Terraform \
+            --image ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest \
+            --cpu 0.5 \
+            --memory 1.0Gi \
+            --registry-server docker.io \
+            --env-vars DATABASE_URL=${{ secrets.AZURE_DATABASE_URL }}
 
-      # Step 5: Apply OpenTofu configuration
-      - name: OpenTofu Apply
-        run: opentofu apply -auto-approve
+  db-setup:
+    name: Setup Database
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set Up Database
+        run: |
+          mysql -h ${DB_HOST} -u ${DB_USER} -p${DB_PASS} < ./database/schema.sql
         env:
-          TF_VAR_compute_instance: "example-instance"
-          TF_VAR_database_name: "example-database"
-          TF_VAR_api_endpoint: "example-api"
-
-      # Optional: Verify the API deployment
-      - name: Verify API
-        run: curl -X GET https://${{ env.TF_VAR_api_endpoint }}
+          DB_HOST: ${{ secrets.AZURE_DATABASE_URL }}
+          DB_USER: "your-db-username"
+          DB_PASS: "your-db-password"
