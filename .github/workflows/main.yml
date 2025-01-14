@@ -55,6 +55,8 @@ jobs:
             --cpu 0.5 \
             --memory 1.0Gi \
             --registry-server docker.io \
+            --registry-username ${{ secrets.DOCKER_USERNAME }} \
+            --registry-password ${{ secrets.DOCKER_PASSWORD }} \
 #            --env-vars DATABASE_URL=${{ secrets.AZURE_DATABASE_URL }}
 
   # db-setup:
