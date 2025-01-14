@@ -13,6 +13,8 @@ builder.Services.AddDbContext<BeeSafeContext>(options =>
     options.UseSqlServer(connectionString);
 });
 
+builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
