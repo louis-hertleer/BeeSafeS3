@@ -8,6 +8,8 @@ on:
     branches:
       - main
 
+
+#Provision API resource, build container from dockerfile, push to dockerhub and pull it again in the container.
 jobs:
   build-and-push:
     name: Build and Push Docker Image
@@ -24,7 +26,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest ./api
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest ./app
 
       - name: Push Docker Image to DockerHub
         run: docker push ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest
@@ -47,26 +49,26 @@ jobs:
         run: |
           az containerapp create \
             --name beesafe-api \
-            --resource-group RGr0937870Terraform \
+            --resource-group Beesafe \
             --environment caer0937870Terraform \
             --image ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest \
             --cpu 0.5 \
             --memory 1.0Gi \
             --registry-server docker.io \
-            --env-vars DATABASE_URL=${{ secrets.AZURE_DATABASE_URL }}
+#            --env-vars DATABASE_URL=${{ secrets.AZURE_DATABASE_URL }}
 
-  db-setup:
-    name: Setup Database
-    runs-on: ubuntu-latest
+  # db-setup:
+  #   name: Setup Database
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v3
 
-      - name: Set Up Database
-        run: |
-          mysql -h ${DB_HOST} -u ${DB_USER} -p${DB_PASS} < ./database/schema.sql
-        env:
-          DB_HOST: ${{ secrets.AZURE_DATABASE_URL }}
-          DB_USER: "your-db-username"
-          DB_PASS: "your-db-password"
+  #     - name: Set Up Database
+  #       run: |
+  #         mysql -h ${DB_HOST} -u ${DB_USER} -p${DB_PASS} < ./database/schema.sql
+  #       env:
+  #         DB_HOST: ${{ secrets.AZURE_SQL_SERVER }} 
+  #         DB_USER: ${{ secrets.AZURE_SQL_USER }}
+  #         DB_PASS: ${{ secrets.AZURE_SQL_PASSWORD }}
