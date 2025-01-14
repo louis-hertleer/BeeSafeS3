@@ -8,8 +8,7 @@ on:
     branches:
       - main
 
-
-#Provision API resource, build container from dockerfile, push to dockerhub and pull it again in the container.
+# Provision API resource, build container from Dockerfile, push to DockerHub, and deploy to Azure Container Apps.
 jobs:
   build-and-push:
     name: Build and Push Docker Image
@@ -57,20 +56,22 @@ jobs:
             --registry-server docker.io \
             --registry-username ${{ secrets.DOCKER_USERNAME }} \
             --registry-password ${{ secrets.DOCKER_PASSWORD }} \
-#            --env-vars DATABASE_URL=${{ secrets.AZURE_DATABASE_URL }}
+            --env-vars DATABASE_URL=${{ secrets.AZURE_DATABASE_URL }}
 
-  # db-setup:
-  #   name: Setup Database
-  #   runs-on: ubuntu-latest
+      - name: Enable Public Access (Ingress)
+        run: |
+          az containerapp ingress enable \
+            --name beesafe-app \
+            --resource-group BeeSafe \
+            --type external \
+            --target-port 80 \
+            --transport auto
 
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v3
-
-  #     - name: Set Up Database
-  #       run: |
-  #         mysql -h ${DB_HOST} -u ${DB_USER} -p${DB_PASS} < ./database/schema.sql
-  #       env:
-  #         DB_HOST: ${{ secrets.AZURE_SQL_SERVER }} 
-  #         DB_USER: ${{ secrets.AZURE_SQL_USER }}
-  #         DB_PASS: ${{ secrets.AZURE_SQL_PASSWORD }}
+      - name: Get Public URL
+        run: |
+          echo "Container App URL:"
+          az containerapp show \
+            --name beesafe-app \
+            --resource-group BeeSafe \
+            --query "properties.configuration.ingress.fqdn" \
+            --output tsv
