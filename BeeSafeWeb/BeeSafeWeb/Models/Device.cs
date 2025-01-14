@@ -10,6 +10,14 @@ public class Device
     public double Longitude { get; set; }
     
     /// <summary>
+    /// Whether the device has been approved yet.
+    ///
+    /// A device may send a registration message to the server, but it is up to
+    /// the user of the application to approve it. Unapproved devices must not
+    /// show up in the overview map.
+    /// </summary>
+    public bool IsApproved { get; set; }
+    /// <summary>
     /// If true, the device is operating as usual. If false, that means the
     /// device has been marked offline after a period of not sending PING
     /// messages.
