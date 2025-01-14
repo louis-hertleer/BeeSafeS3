@@ -11,15 +11,20 @@
     <style>
         #map {
             width: 80vw; 
-            height: 50vh; 
+            height: 65vh; 
         }
 
     </style>
 </head>
 <body>
-<nav class="bg-black text-white p-4">
+<nav class="bg-slate-600 text-white p-4 flex justify-between items-center">
+    <!-- Left Side: Title -->
     <p class="text-xl font-bold">'t Geels Bieke</p>
+
+    <!-- Right Side: Login Button -->
+    <a href="/Auth/Login" class="bg-white text-black px-4 py-2 rounded hover:bg-gray-200 transition">Login</a>
 </nav>
+
 <main>
     <div class="p-4">
         <h1 class="text-3xl text-bold">@ViewData["BigTitle"]</h1>
