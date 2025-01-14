@@ -26,7 +26,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest ./app
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest .
 
       - name: Push Docker Image to DockerHub
         run: docker push ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest
