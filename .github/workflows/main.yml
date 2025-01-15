@@ -58,13 +58,30 @@ jobs:
             --env-vars DATABASE_URL=${{ secrets.AZURE_DATABASE_URL }} \
             --min-replicas 1 \
             --max-replicas 3 \
-            --health-probe-path /health \
-            --health-probe-protocol HTTP \
-            --health-probe-interval 30 \
-            --health-probe-timeout 10 \
-            --health-threshold 3 \
             --ingress external \
             --target-port 80
+
+      - name: Configure Health Probe
+        run: |
+          az containerapp update \
+            --name beesafe-app \
+            --resource-group BeeSafe \
+            --probe-config \
+              healthProbeType=liveness \
+              path=/health \
+              port=80 \
+              interval=30 \
+              timeout=10 \
+              retries=3
+
+      - name: Enable Public Access (Ingress)
+        run: |
+          az containerapp ingress enable \
+            --name beesafe-app \
+            --resource-group BeeSafe \
+            --type external \
+            --target-port 80 \
+            --transport auto
 
       - name: Get Public URL
         run: |
