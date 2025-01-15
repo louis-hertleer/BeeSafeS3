@@ -1,9 +1,9 @@
-name: Deploy to Azure
+name: Build, Push to DockerHub, and Deploy to Azure
 
 on:
   push:
     branches:
-      - main
+      - main  # Trigger on pushes to the main branch
   pull_request:
     branches:
       - main
@@ -29,43 +29,51 @@ jobs:
       - name: Push Docker Image to DockerHub
         run: docker push ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest
 
-
   deploy:
-    name: Deploy to Azure Container Instance
+    name: Deploy to Azure
     runs-on: ubuntu-latest
-    needs: build-and-push
+    needs: build-and-push  # This job runs after the build-and-push job
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Log in to Azure CLI
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Deploy Container to Azure Container Instance
-      run: |
-        az container create \
-          --name beesafe-api-container \
-          --resource-group BeeSafe \
-          --image ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest \
-          --cpu 0.5 \
-          --memory 1.0 \
-          --registry-login-server docker.io \
-          --registry-username ${{ secrets.DOCKER_USERNAME }} \
-          --registry-password ${{ secrets.DOCKER_PASSWORD }} \
-          --environment-variables DATABASE_URL=${{ secrets.AZURE_DATABASE_URL }} \
-          --ports 80 \
-          --ip-address public \
-          --os-type Linux
-          
+      - name: Deploy Container Instance using ARM Template
+        run: |
+          az group deployment create \
+            --resource-group "BeeSafe" \
+            --template-file ./azure-deployment-template.json \
+            --parameters \
+                containerName="test" \
+                location="uksouth" \
+                imageType="Private" \
+                imageName="hertleerlouis/beesafeapi:latest" \
+                osType="Linux" \
+                numberCpuCores="1" \
+                memory="1" \
+                restartPolicy="OnFailure" \
+                sku="Standard" \
+                imageRegistryLoginServer="docker.io" \
+                imageUsername="${{ secrets.DOCKER_USERNAME }}" \
+                imagePassword="${{ secrets.DOCKER_PASSWORD }}" \
+                ipAddressType="Public" \
+                ports="[ { \"port\": \"80\", \"protocol\": \"TCP\" } ]" \
+                dnsNameLabel="beesafetest" \
+                workspaceRegion="uksouth" \
+                workspaceSubId="e0287f02-4e4c-455c-9c20-adcb24d4c331" \
+                workspaceResourceGroupName="BeeSafe" \
+                workspaceName="workspacebeesafe8420"
 
-    - name: Get Public IP
-      run: |
-        echo "Container Instance Public IP:"
-        az container show \
-          --name beesafe-api-container \
-          --resource-group BeeSafe \
-          --query "ipAddress.ip" \
-          --output tsv
+      - name: Get Public IP Address
+        run: |
+          echo "Getting public IP address of deployed container..."
+          az container show \
+            --name test \
+            --resource-group "BeeSafe" \
+            --query "ipAddress.ip" \
+            --output tsv
