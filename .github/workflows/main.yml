@@ -61,19 +61,6 @@ jobs:
             --ingress external \
             --target-port 80
 
-      - name: Configure Health Probe
-        run: |
-          az containerapp update \
-            --name beesafe-app \
-            --resource-group BeeSafe \
-            --probe-config \
-              healthProbeType=liveness \
-              path=/health \
-              port=80 \
-              interval=30 \
-              timeout=10 \
-              retries=3
-
       - name: Enable Public Access (Ingress)
         run: |
           az containerapp ingress enable \
