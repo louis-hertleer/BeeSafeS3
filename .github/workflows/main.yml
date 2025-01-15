@@ -25,10 +25,10 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/beesafeapp:latest ./BeeSafeWeb/
 
       - name: Push Docker Image to DockerHub
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/beesafeapp:latest
 
   deploy:
     name: Deploy to Azure Container Instance
@@ -54,13 +54,13 @@ jobs:
           az container create \
             --name beesafe-api-container \
             --resource-group BeeSafe \
-            --image docker.io/${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest \
+            --image docker.io/${{ secrets.DOCKER_USERNAME }}/beesafeapp:latest \
             --cpu 0.5 \
             --memory 1.0 \
             --registry-login-server docker.io \
             --registry-username ${{ secrets.DOCKER_USERNAME }} \
             --registry-password ${{ secrets.DOCKER_PASSWORD }} \
-            --ports 80 \
+            --ports 8080 8081 \
             --ip-address public \
             --os-type Linux \
             --restart-policy Always
