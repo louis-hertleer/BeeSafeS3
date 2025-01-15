@@ -92,7 +92,7 @@ public class DeviceController : Controller
 
         if (!device.IsApproved)
         {
-            return Forbid();
+            return StatusCode(403);
         }
 
         return Ok();
