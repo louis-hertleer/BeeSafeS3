@@ -3,6 +3,7 @@
 import requests
 import logging
 import json
+from datetime import datetime
 
 from enum import Enum
 
@@ -13,13 +14,20 @@ class MessageType(int, Enum):
 
 
 class BeeSafeClient:
-    def __init__(self, url, device_id=None):
+    """
+    This class allows you to interact with the application via messages.
+    """
+    def __init__(self, url, device_id:str =""):
+        """
+        :param str url: The URL of the application.
+        :param str device_id: (optional) the ID of an already registered device.
+        """
         self.url = url
         self.device_id = device_id
-        if device_id == None:
+        if device_id == "":
             self.device_id = self.__register_device()
 
-    def __register_device(self):
+    def __register_device(self) -> str:
         data = {
             'latitude': 51.5,
             'longitude': 5.05,
@@ -40,14 +48,20 @@ class BeeSafeClient:
 
         return id
 
-    # timestamp must be a Unix timestamp.
-    def send_detection_event(self, hornet_direction, timestamp):
+    def send_detection_event(self, hornet_direction: float, timestamp: datetime):
+        """
+        Send a detection event message. When a hornet is detected, this
+        function is what you use.
+
+        :param float hornet_direction: The direction of the hornet detected.
+        :param datetime timestamp: The time when the hornet was detected.
+        """
         data = {
             'device': self.device_id,
             'message_type': MessageType.DETECTION_EVENT,
             'data': {
                 'hornet_direction': hornet_direction,
-                'timestamp': timestamp
+                'timestamp': timestamp.timestamp()
             }
         }
 
@@ -59,6 +73,10 @@ class BeeSafeClient:
         logging.info(f"Successfully sent detection event.")
 
     def send_ping(self):
+        """
+        Send a ping to the server. You should do this regularly to let
+        the server know that this device is still working as intended.
+        """
         data = {
             'device': self.device_id,
             'message_type': MessageType.PING

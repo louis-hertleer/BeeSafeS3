@@ -28,7 +28,7 @@ def main():
         sleep(2)
     for i in range(0, 3):
         # Send a detection event
-        client.send_detection_event(5 + randrange(-3,3), int(datetime.now().timestamp()))
+        client.send_detection_event(5 + randrange(-3,3), datetime.now())
         sleep(1)
 
 if __name__ == '__main__':
