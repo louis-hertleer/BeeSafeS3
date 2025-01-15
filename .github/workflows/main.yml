@@ -64,7 +64,7 @@ jobs:
             --name beesafe-app \
             --resource-group BeeSafe \
             --type external \
-            --target-port 80 \
+            --target-port 443 \
             --transport auto
 
       - name: Get Public URL
