@@ -56,7 +56,10 @@ jobs:
           --registry-username ${{ secrets.DOCKER_USERNAME }} \
           --registry-password ${{ secrets.DOCKER_PASSWORD }} \
           --environment-variables DATABASE_URL=${{ secrets.AZURE_DATABASE_URL }} \
-          --ports 80
+          --ports 80 \
+          --ip-address public \
+          --os-type Linux
+          
 
     - name: Get Public IP
       run: |
