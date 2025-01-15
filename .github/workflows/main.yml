@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - pipeline-lh
   pull_request:
     branches:
       - main
