@@ -18,19 +18,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Log in to Azure CLI
-        uses: azure/login@v1
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Log in to Azure Container Registry
-        run: az acr login --name beesaferegistry
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker Image
-        run: docker build -t beesaferegistry.azurecr.io/beesafeapi:latest .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest .
 
-      - name: Push Docker Image to Azure Container Registry
-        run: docker push beesaferegistry.azurecr.io/beesafeapi:latest
+      - name: Push Docker Image to DockerHub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest
 
   deploy:
     name: Deploy to Azure Container Instance
@@ -38,35 +36,40 @@ jobs:
     needs: build-and-push
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-      - name: Log in to Azure CLI
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Log in to Azure CLI
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Deploy Container to Azure Container Instance
-        run: |
+    - name: Deploy Container to Azure Container Instance
+      uses: nick-invision/retry@v2
+      with:
+        timeout_minutes: 3
+        max_attempts: 3
+        retry_wait_seconds: 15
+        command: |
           az container create \
             --name beesafe-api-container \
             --resource-group BeeSafe \
-            --image beesaferegistry.azurecr.io/beesafeapi:latest \
+            --image docker.io/${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest \
             --cpu 0.5 \
             --memory 1.0 \
-            --registry-login-server beesaferegistry.azurecr.io \
-            --registry-username $(az acr credential show --name beesaferegistry --query "username" -o tsv) \
-            --registry-password $(az acr credential show --name beesaferegistry --query "passwords[0].value" -o tsv) \
-            --environment-variables DATABASE_URL=${{ secrets.AZURE_DATABASE_URL }} \
+            --registry-login-server docker.io \
+            --registry-username ${{ secrets.DOCKER_USERNAME }} \
+            --registry-password ${{ secrets.DOCKER_PASSWORD }} \
             --ports 80 \
             --ip-address public \
-            --os-type Linux
+            --os-type Linux \
+            --restart-policy Always
 
-      - name: Get Public IP
-        run: |
-          echo "Container Instance Public IP:"
-          az container show \
-            --name beesafe-api-container \
-            --resource-group BeeSafe \
-            --query "ipAddress.ip" \
-            --output tsv
+    - name: Get Public IP
+      run: |
+        echo "Container Instance Public IP:"
+        az container show \
+          --name beesafe-api-container \
+          --resource-group BeeSafe \
+          --query "ipAddress.ip" \
+          --output tsv
