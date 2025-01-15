@@ -5,9 +5,6 @@ on:
     branches:
       - main
       - pipeline-lh
-  pull_request:
-    branches:
-      - main
 
 jobs:
   build-and-push:
