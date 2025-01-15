@@ -1,33 +1,66 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using BeeSafeWeb.Data;
+using Microsoft.EntityFrameworkCore;
 using BeeSafeWeb.Models;
 using Microsoft.AspNetCore.Authorization;
 
-namespace BeeSafeWeb.Controllers;
+using System.Diagnostics;
 
-[Authorize]
-public class HomeController : Controller
+namespace BeeSafeWeb.Controllers
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
+    [Authorize]
+    public class HomeController : Controller
     {
-        _logger = logger;
-    }
+        private readonly BeeSafeContext _context;
 
-    public IActionResult Index()
-    {
-        return View();
-    }
+        public HomeController(BeeSafeContext context)
+        {
+            _context = context;
+        }
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+        public IActionResult Index()
+        {
+            // get information from the devices
+            var devices = _context.Devices
+                .Select(d => new
+                {
+                    d.Id,
+                    d.Latitude,
+                    d.Longitude,
+                    d.IsOnline,
+                    d.IsTracking,
+                    d.IsApproved,
+                })
+                .Where(d => d.IsApproved)
+                .ToList();
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            // get information from the nest estimate
+            var nestEstimate = _context.NestEstimates
+                .Select(n => new
+                {
+                    n.EstimatedLatitude,
+                    n.EstimatedLongitude,
+                    n.AccuracyLevel
+                })
+                .FirstOrDefault();
+
+            // Pass data to the view
+            ViewData["Devices"] = devices;
+            ViewData["NestEstimate"] = nestEstimate;
+
+            return View();
+        }
+
+
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
     }
 }
