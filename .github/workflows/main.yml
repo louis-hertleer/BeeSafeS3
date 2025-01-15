@@ -51,7 +51,7 @@ jobs:
           --resource-group BeeSafe \
           --image ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest \
           --cpu 0.5 \
-          --memory 1.0Gi \
+          --memory 1.0 \
           --registry-login-server docker.io \
           --registry-username ${{ secrets.DOCKER_USERNAME }} \
           --registry-password ${{ secrets.DOCKER_PASSWORD }} \
