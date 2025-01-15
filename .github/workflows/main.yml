@@ -49,7 +49,7 @@ jobs:
             --name beesafe-app \
             --resource-group BeeSafe \
             --environment caebeesafe \
-            --image ${{ secrets.DOCKER_USERNAME }}/beesafeapi:latest \
+            --image httpd:latest \
             --cpu 0.5 \
             --memory 1.0Gi \
             --registry-server docker.io \
