@@ -45,7 +45,7 @@ jobs:
 
       - name: Deploy Container Instance using ARM Template
         run: |
-          az group deployment create \
+          az deployment group create \
             --resource-group "BeeSafe" \
             --template-file ./azure-deployment-template.json \
             --parameters \
