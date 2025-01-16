@@ -7,7 +7,9 @@ import logging
 import sys
 import beesafe
 
+from datetime import datetime
 from time import sleep
+from random import randrange
 
 def usage():
     print(f"usage: {sys.argv[0]} URL")
@@ -24,6 +26,10 @@ def main():
         # Ping the server
         client.send_ping()
         sleep(2)
+    for i in range(0, 3):
+        # Send a detection event
+        client.send_detection_event(5 + randrange(-3,3), datetime.now())
+        sleep(1)
 
 if __name__ == '__main__':
     main()

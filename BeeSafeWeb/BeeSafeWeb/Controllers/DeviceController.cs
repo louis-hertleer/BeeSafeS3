@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 using BeeSafeWeb.Data;
 using BeeSafeWeb.Messages;
 using BeeSafeWeb.Models;
@@ -11,10 +11,12 @@ namespace BeeSafeWeb.Controllers;
 public class DeviceController : Controller
 {
     private readonly IRepository<Device> _deviceRepository;
+    private readonly IRepository<DetectionEvent> _detectionRepository;
 
-    public DeviceController(IRepository<Device> deviceRepository)
+    public DeviceController(IRepository<Device> deviceRepository, IRepository<DetectionEvent> detectionRepository)
     {
         _deviceRepository = deviceRepository;
+        _detectionRepository = detectionRepository;
     }
 
     [HttpPost("Register")]
@@ -91,6 +93,10 @@ public class DeviceController : Controller
     [HttpPost("DetectionEvent")]
     public IActionResult DetectionEvent(RequestMessage requestMessage)
     {
+        Device device;
+        float hornetDirection;
+        Guid guid;
+        int timestamp;
         var result = MessageIsValid(requestMessage);
 
         if (result is not OkResult)
@@ -98,10 +104,43 @@ public class DeviceController : Controller
             return result;
         }
 
-        if (requestMessage.MessageType != MessageType.DetectionEvent)
+        /* At this point, we can parse the guid successfully. If this fails,
+         * IDK anymore
+         */
+        Guid.TryParse(requestMessage.Device, out guid);
+        device = _deviceRepository.GetById(guid)!;
+
+        if (requestMessage.MessageType != MessageType.DetectionEvent
+            || requestMessage.Data is null)
         {
             return BadRequest();
         }
+
+        JsonElement data = requestMessage.Data;
+
+        try
+        {
+            timestamp = data.GetProperty("timestamp").GetInt32();
+            hornetDirection = data.GetProperty("hornet_direction").GetSingle();
+        }
+        catch (KeyNotFoundException)
+        {
+            return BadRequest(
+                "\"data\" attribute is missing either timestamp or hornet_direction.");
+        }
+        catch (InvalidOperationException)
+        {
+            return BadRequest();
+        }
+
+        DetectionEvent detectionEvent = new()
+        {
+            Timestamp = DateTimeOffset.FromUnixTimeSeconds(timestamp).DateTime,
+            HornetDirection = hornetDirection,
+            Device = device
+        };
+
+        _detectionRepository.Add(detectionEvent);
 
         return Ok();
     }
