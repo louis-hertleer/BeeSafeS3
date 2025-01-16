@@ -23,7 +23,6 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -39,10 +38,11 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
-using (var serviceScope = app.Services.CreateScope())
+using (var scope = app.Services.CreateScope())
 {
-    var context = serviceScope.ServiceProvider.GetRequiredService<BeeSafeContext>();
-    var appContext = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var context = scope.ServiceProvider.GetRequiredService<BeeSafeContext>();
+    var appContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    DbInitializer.Initialize(context);
     context.Database.EnsureCreated();
     appContext.Database.Migrate();
 }

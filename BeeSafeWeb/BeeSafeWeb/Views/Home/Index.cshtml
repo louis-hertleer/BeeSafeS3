@@ -1,5 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    var devices = ViewData["Devices"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    var nestEstimate = ViewData["NestEstimate"] as dynamic;
 }
 <div class="container mx-auto mt-6">
     <div class="flex justify-left mb-2">
@@ -7,70 +9,92 @@
     </div>
     <div class="flex justify-center ">
         <div class="flex flex-wrap lg:flex-nowrap items-center gap-8 p-12 rounded-lg">
-            
+
+            <!-- leaflet map -->
+
             <div id="map" class="w-full h-[50vh] max-w-xl border rounded-md shadow-md"></div>
 
+            <!-- information boxes -->
             <div class="flex flex-col gap-4 w-full max-w-sm">
                 <div class="bg-gray-100 p-4 rounded-md shadow-md border">
                     <h3 class="text-xl font-bold text-gray-800">Info</h3>
                     <p class="text-gray-600 mt-2">
-                        Online devices: 3
+                        Online devices: @devices.Count(d => d.IsOnline)
                     </p>
                     <p class="text-gray-600 mt-2">
-                        Accuracy radius: 13 meters
+                        @if (ViewData["NestEstimate"] != null)
+                        {
+                            <p class="text-gray-600 mt-2">Accuracy Radius: @nestEstimate.AccuracyLevel meters</p>
+                        }
+                        else
+                        {
+                            <p class="text-gray-600 mt-2">Nest estimate data is not available.</p>
+                        }                    
                     </p>
                 </div>
+
+                <!-- information of selected device -->
                 <div class="bg-gray-100 p-4 rounded-md shadow-md border device-info">
                     <h3 class="text-xl font-bold text-gray-800">Device Info</h3>
                     <p class="text-gray-600 mt-2">Click on a device marker to see details.</p>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
 
-
 @section Scripts
 {
-<script>
-    var map = L.map('map').setView([51.168300, 4.980980], 20);
+    <script>
+        var map = L.map('map').setView([51.168300, 4.980980], 20);
 
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
 
-    // hornet nest radius 
-    var circle = L.circle([51.168500, 4.980980], {
-        color: 'red',
-        fillColor: '#f03',
-        fillOpacity: 0.5,
-        radius: 13
-    }).addTo(map).bindPopup('Accuracy 13m');
+        // Add the circle for the nest estimate
+        @if (nestEstimate != null)
+        {
+            <text>
+                    // variable to get the data of the nest estimate
+                    var circleData = {
+                        lat: @nestEstimate.EstimatedLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        lng: @nestEstimate.EstimatedLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        radius: @nestEstimate.AccuracyLevel
+                    };
 
-    // Create markers with associated device data
-    var devices = [
-        { id: 1, lat: 51.168100, lng: 4.980800, status: "Online", mode: "Tracking", defense: "Enabled" },
-        { id: 2, lat: 51.168100, lng: 4.980980, status: "Offline", mode: "Idle", defense: "Disabled" },
-        { id: 3, lat: 51.168100, lng: 4.981200, status: "Online", mode: "Defense", defense: "Enabled" }
-    ];
+                    // displaying the circle
+                    var circle = L.circle([circleData.lat, circleData.lng], {
+                        color: 'red',
+                        fillColor: '#f03',
+                        fillOpacity: 0.5,
+                        radius: circleData.radius
+                    }).addTo(map).bindPopup(`Accuracy ${circleData.radius}m`);
+            </text>
+        }
 
-    devices.forEach(device => {
-        var marker = L.marker([device.lat, device.lng]).addTo(map).bindPopup(`Device ${device.id}`);
-        marker.on('click', function () {
-            // Update the device info box
-            document.querySelector('.device-info').innerHTML = `
-                <h3 class="text-xl font-bold text-gray-800">Device Info</h3>
-                <p class="text-gray-600 mt-2">Status: ${device.status}</p>
-                <p class="text-gray-600 mt-2">Current mode: <b>${device.mode}</b></p>
-                <p class="text-gray-600 mt-2">Defense mode: <b>${device.defense}</b></p>
-            `;
+        // get device data and add markers
+        var devices = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(devices));
+
+        //loop over devices and show a marker for each device
+        devices.forEach(device => {
+            if (device.Latitude && device.Longitude) {
+                var marker = L.marker([device.Latitude, device.Longitude])
+                    .addTo(map)
+                    .bindPopup(`Device ${device.Id}`);
+                marker.on('click', function () {
+                    document.querySelector('.device-info').innerHTML = `
+                            <h3 class="text-xl font-bold text-gray-800">Device Info</h3>
+                            <p class="text-gray-600 mt-2">Status: ${device.IsOnline ? 'Online' : 'Offline'}</p>
+                            <p class="text-gray-600 mt-2">Current mode: <b>${device.IsTracking ? 'Tracking' : 'Defence'}</b></p>
+                        `;
+                });
+            } else {
+                console.warn("Device with missing coordinates:", device);
+            }
         });
-    });
-</script>
+    </script>
+
+
 }
-
-
-
-

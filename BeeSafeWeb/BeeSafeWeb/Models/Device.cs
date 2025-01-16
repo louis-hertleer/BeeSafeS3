@@ -36,5 +36,10 @@ public class Device
     /// </summary>
     public double Direction { get; set; }
     
+    /// <summary>
+    /// The time that the device was last heard from.
+    /// </summary>
+    public DateTime LastActive { get; set; }
+
     public List<DetectionEvent> DetectionEvents { get; set; }
 }
