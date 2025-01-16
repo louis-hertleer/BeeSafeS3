@@ -30,6 +30,7 @@ namespace BeeSafeWeb.Controllers
                     d.IsOnline,
                     d.IsTracking,
                     d.IsApproved,
+                    d.LastActiveString
                 })
                 .Where(d => d.IsApproved)
                 .ToList();

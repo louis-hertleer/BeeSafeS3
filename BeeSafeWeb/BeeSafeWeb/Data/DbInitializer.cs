@@ -25,10 +25,10 @@ namespace BeeSafeWeb.Data
                     Latitude = 51.168100,
                     Longitude = 4.980800,
                     IsApproved = true,
-                    IsOnline = true,
                     IsTracking = true,
                     Direction = 45.0,
-                    DetectionEvents = new List<DetectionEvent>()
+                    DetectionEvents = new List<DetectionEvent>(),
+                    LastActive = DateTime.Now
                 },
                 new Device
                 {
@@ -36,10 +36,10 @@ namespace BeeSafeWeb.Data
                     Latitude = 51.168100,
                     Longitude = 4.980980,
                     IsApproved = true,
-                    IsOnline = false,
                     IsTracking = false,
                     Direction = 90.0,
-                    DetectionEvents = new List<DetectionEvent>()
+                    DetectionEvents = new List<DetectionEvent>(),
+                    LastActive = DateTime.Now
                 }
             };
 

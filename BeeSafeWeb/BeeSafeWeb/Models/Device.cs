@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace BeeSafeWeb.Models;
 
 /// <summary>
@@ -17,13 +19,21 @@ public class Device
     /// show up in the overview map.
     /// </summary>
     public bool IsApproved { get; set; }
+
     /// <summary>
     /// If true, the device is operating as usual. If false, that means the
     /// device has been marked offline after a period of not sending PING
     /// messages.
     /// </summary>
-    public bool IsOnline { get; set; }
-    
+    [NotMapped]
+    public bool IsOnline
+    {
+        get
+        {
+            return (LastActive - DateTime.Now).Minutes > 5;
+        }
+    }
+
     /// <summary>
     /// If true, this means the device is tracking the hornets. If false, the
     /// device is attacking the hornets. 
@@ -40,6 +50,36 @@ public class Device
     /// The time that the device was last heard from.
     /// </summary>
     public DateTime LastActive { get; set; }
+
+    /// <summary>
+    /// The text, in human-readable form, that describes how long ago the device
+    /// was last updated.
+    /// </summary>
+    [NotMapped]
+    public string LastActiveString
+    {
+        get
+        {
+            var date = DateTime.Now - LastActive;
+            if (date.Days > 0)
+            {
+                return date.Days + " days ago";
+            }
+            if (date.Hours > 0)
+            {
+                return date.Hours + " hours ago";
+            }
+            if (date.Minutes > 0)
+            {
+                return date.Minutes + " minutes ago";
+            }
+            if (date.Seconds > 30)
+            {
+                return date.Seconds + " seconds ago";
+            }
+            return "Just now";
+        }
+    }
 
     public List<DetectionEvent> DetectionEvents { get; set; }
 }
