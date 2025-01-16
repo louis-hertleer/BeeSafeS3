@@ -7,9 +7,8 @@ import logging
 import sys
 import beesafe
 
-from datetime import datetime
 from time import sleep
-from random import randrange
+from threading import Thread
 
 def usage():
     print(f"usage: {sys.argv[0]} URL")
@@ -17,19 +16,24 @@ def usage():
 
 URL = "http://localhost:5089"
 
+client = beesafe.BeeSafeClient(URL, device_id="7257818e-0ba7-418d-a0e1-08dd360eb87b")
+
+def ping_server():
+    logging.basicConfig(level=logging.INFO)
+    while True:
+        # Ping the server
+        client.send_ping()
+        sleep(10)
+
 def main():
     logging.basicConfig(level=logging.INFO)
 
-    client = beesafe.BeeSafeClient(URL)
     input("Please press any key to continue when the device has been approved.")
-    for i in range(0, 5):
-        # Ping the server
-        client.send_ping()
-        sleep(2)
-    for i in range(0, 3):
-        # Send a detection event
-        client.send_detection_event(5 + randrange(-3,3), datetime.now())
-        sleep(1)
+
+    ping_thread = Thread(target=ping_server)
+
+    ping_thread.start()
+    ping_thread.join()
 
 if __name__ == '__main__':
     main()
