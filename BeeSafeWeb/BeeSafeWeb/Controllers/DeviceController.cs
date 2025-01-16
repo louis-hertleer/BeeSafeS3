@@ -28,7 +28,6 @@ public class DeviceController : Controller
             Latitude = request.Latitude,
             Direction = request.Direction,
             IsApproved = false,
-            IsOnline = true,
         };
 
         _deviceRepository.Add(device);

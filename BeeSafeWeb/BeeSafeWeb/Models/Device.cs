@@ -19,13 +19,21 @@ public class Device
     /// show up in the overview map.
     /// </summary>
     public bool IsApproved { get; set; }
+
     /// <summary>
     /// If true, the device is operating as usual. If false, that means the
     /// device has been marked offline after a period of not sending PING
     /// messages.
     /// </summary>
-    public bool IsOnline { get; set; }
-    
+    [NotMapped]
+    public bool IsOnline
+    {
+        get
+        {
+            return (LastActive - DateTime.Now).Minutes > 5;
+        }
+    }
+
     /// <summary>
     /// If true, this means the device is tracking the hornets. If false, the
     /// device is attacking the hornets. 
