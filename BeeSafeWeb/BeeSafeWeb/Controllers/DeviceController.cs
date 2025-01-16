@@ -41,7 +41,7 @@ public class DeviceController : Controller
         return Ok(response);
     }
 
-    private IActionResult MessageIsValid(RequestMessage message)
+    private ActionResult MessageIsValid(RequestMessage message)
     {
         Device? device;
         Guid guid;
@@ -64,15 +64,16 @@ public class DeviceController : Controller
             return StatusCode(403);
         }
 
-        return Ok();
+        return Ok(device);
     }
 
     [HttpPost("Ping")]
     public IActionResult Ping(RequestMessage requestMessage)
     {
+        Device device;
         var result = MessageIsValid(requestMessage);
 
-        if (result is not OkResult)
+        if (result is not OkObjectResult)
         {
             return result;
         }
@@ -81,6 +82,11 @@ public class DeviceController : Controller
         {
             return BadRequest();
         }
+
+        /* update the last active state */
+        device = (result as OkObjectResult).Value as Device;
+        device.LastActive = DateTime.Now;
+        _deviceRepository.Update(device);
 
         var response = new ResponseMessage()
         {
@@ -99,7 +105,7 @@ public class DeviceController : Controller
         int timestamp;
         var result = MessageIsValid(requestMessage);
 
-        if (result is not OkResult)
+        if (result is not OkObjectResult)
         {
             return result;
         }

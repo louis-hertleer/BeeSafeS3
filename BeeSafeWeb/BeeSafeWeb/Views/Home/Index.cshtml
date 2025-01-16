@@ -88,6 +88,7 @@
                             <h3 class="text-xl font-bold text-gray-800">Device Info</h3>
                             <p class="text-gray-600 mt-2">Status: ${device.IsOnline ? 'Online' : 'Offline'}</p>
                             <p class="text-gray-600 mt-2">Current mode: <b>${device.IsTracking ? 'Tracking' : 'Defence'}</b></p>
+                            <p class="text-gray-600 mt-2">Last active: <b>${device.LastActiveString}</b></p>
                         `;
                 });
             } else {
