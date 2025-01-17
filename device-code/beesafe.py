@@ -48,6 +48,16 @@ class BeeSafeClient:
 
         return id
 
+    def _check_status_code(self, status_code: int, generic_message: str):
+        if status_code != 200:
+            message = generic_message
+            if status_code == 403:
+                message = "This device has not been approved yet."
+            elif status_code == 401:
+                message = "The supplied device id is incorrect."
+            raise Exception(message)
+
+
     def send_detection_event(self, hornet_direction: float, timestamp: datetime):
         """
         Send a detection event message. When a hornet is detected, this
@@ -67,8 +77,7 @@ class BeeSafeClient:
 
         r = requests.post(self.url + "/Device/DetectionEvent", json=data)
 
-        if r.status_code != 200:
-            raise Exception("Failed to send detection event.")
+        self._check_status_code(r.status_code, "Failed to send detection event.")
 
         logging.info(f"Successfully sent detection event.")
 
@@ -84,11 +93,7 @@ class BeeSafeClient:
 
         r = requests.post(self.url + "/Device/Ping", json=data)
 
-        if r.status_code != 200:
-            message = "Failed to ping server."
-            if r.status_code == 403:
-                message = "This device has not been approved yet."
-            raise Exception(message)
+        self._check_status_code(r.status_code, "Failed to ping server.")
 
         response = r.json()
 

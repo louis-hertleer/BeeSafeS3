@@ -26,13 +26,7 @@ public class Device
     /// messages.
     /// </summary>
     [NotMapped]
-    public bool IsOnline
-    {
-        get
-        {
-            return (LastActive - DateTime.Now).Minutes > 5;
-        }
-    }
+    public bool IsOnline => (DateTime.Now - LastActive).Minutes < 5;
 
     /// <summary>
     /// If true, this means the device is tracking the hornets. If false, the
@@ -61,23 +55,39 @@ public class Device
         get
         {
             var date = DateTime.Now - LastActive;
+            int number = 0;
+            string unit = "Just now";
             if (date.Days > 0)
             {
-                return date.Days + " days ago";
+                number = date.Days;
+                unit = "day";
             }
-            if (date.Hours > 0)
+            else if (date.Hours > 0)
             {
-                return date.Hours + " hours ago";
+                number = date.Hours;
+                unit = "hour";
             }
-            if (date.Minutes > 0)
+            else if (date.Minutes > 0)
             {
-                return date.Minutes + " minutes ago";
+                number = date.Minutes;
+                unit = "minute";
             }
-            if (date.Seconds > 30)
+            else if (date.Seconds > 30)
             {
-                return date.Seconds + " seconds ago";
+                number = date.Seconds;
+                unit = "second";
             }
-            return "Just now";
+            else
+            {
+                return unit;
+            }
+
+            if (number != 1)
+            {
+                unit += "s";
+            }
+
+            return $"{number} {unit} ago";
         }
     }
 

@@ -16,7 +16,7 @@ def usage():
 
 URL = "http://localhost:5089"
 
-client = beesafe.BeeSafeClient(URL, device_id="7257818e-0ba7-418d-a0e1-08dd360eb87b")
+client = beesafe.BeeSafeClient(URL)
 
 def ping_server():
     logging.basicConfig(level=logging.INFO)
