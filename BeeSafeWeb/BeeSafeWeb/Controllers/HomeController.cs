@@ -30,9 +30,11 @@ namespace BeeSafeWeb.Controllers
                     d.IsOnline,
                     d.IsTracking,
                     d.IsApproved,
-                    d.LastActiveString
+                    d.LastActiveString,
+                    d.IsDeclined,
                 })
                 .Where(d => d.IsApproved)
+                .Where(d => !d.IsDeclined)
                 .ToList();
 
             // get information from the nest estimate

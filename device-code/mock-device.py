@@ -6,6 +6,7 @@
 import logging
 import sys
 import beesafe
+from random import uniform
 
 from time import sleep
 from threading import Thread
@@ -16,7 +17,7 @@ def usage():
 
 URL = "http://localhost:5089"
 
-client = beesafe.BeeSafeClient(URL)
+client = beesafe.BeeSafeClient(URL, 51.163000 + uniform(-0.01, 0.01), 4.989118 + uniform(-0.02, 0.02), 25)
 
 def ping_server():
     logging.basicConfig(level=logging.INFO)

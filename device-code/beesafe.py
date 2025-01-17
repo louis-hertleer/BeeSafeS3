@@ -12,12 +12,20 @@ class MessageType(int, Enum):
     PONG = 1
     DETECTION_EVENT = 2
 
+class RegistrationDeviceError(Exception):
+    pass
+
+class NonExistantDeviceError(Exception):
+    pass
+
+class DeviceNotApprovedError(Exception):
+    pass
 
 class BeeSafeClient:
     """
     This class allows you to interact with the application via messages.
     """
-    def __init__(self, url, device_id:str =""):
+    def __init__(self, url, latitude: float, longitude: float, direction: float, device_id:str =""):
         """
         :param str url: The URL of the application.
         :param str device_id: (optional) the ID of an already registered device.
@@ -25,19 +33,19 @@ class BeeSafeClient:
         self.url = url
         self.device_id = device_id
         if device_id == "":
-            self.device_id = self.__register_device()
+            self.device_id = self.__register_device(latitude, longitude, direction)
 
-    def __register_device(self) -> str:
+    def __register_device(self, latitude: float, longitude: float, direction: float) -> str:
         data = {
-            'latitude': 51.5,
-            'longitude': 5.05,
-            'direction': 25
+            'latitude': latitude,
+            'longitude': longitude,
+            'direction': direction
         }
 
         r = requests.post(self.url + "/Device/Register", json=data)
 
         if r.status_code != 200:
-            raise Exception("Failed to register device.")
+            raise RegistrationDeviceError()
 
         try:
             id = r.json()["id"]
@@ -52,10 +60,9 @@ class BeeSafeClient:
         if status_code != 200:
             message = generic_message
             if status_code == 403:
-                message = "This device has not been approved yet."
+                raise DeviceNotApprovedError()
             elif status_code == 401:
-                message = "The supplied device id is incorrect."
-            raise Exception(message)
+                raise NonExistantDeviceError()
 
 
     def send_detection_event(self, hornet_direction: float, timestamp: datetime):
@@ -93,7 +100,12 @@ class BeeSafeClient:
 
         r = requests.post(self.url + "/Device/Ping", json=data)
 
-        self._check_status_code(r.status_code, "Failed to ping server.")
+        try:
+            self._check_status_code(r.status_code, "Failed to ping server.")
+        # We can safely ignore that
+        except DeviceNotApprovedError:
+            return
+
 
         response = r.json()
 

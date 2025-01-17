@@ -22,12 +22,14 @@
 {
     <nav class="bg-slate-600 text-white p-4 flex justify-between items-center">
         <!-- Left Side: Title -->
-        <p class="text-xl font-bold">'t Geels Bieke</p>
-
-        <!-- Right Side: Login Button -->
-        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-        </form>
+        <p class="text-xl font-bold"><a asp-controller="Home" asp-action="Index">'t Geels Bieke</a></p>
+        <div class="flex space-x-4">
+            <p><a asp-controller="Approvals" asp-action="Index">Show Pending Devices</a></p>
+            <!-- Right Side: Login Button -->
+            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+            </form>
+        </div>
     </nav>
 }
 

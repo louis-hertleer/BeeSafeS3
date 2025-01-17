@@ -1,0 +1,66 @@
+@{
+    ViewData["Title"] = "Show Pending Devices";
+
+    List<Device> devices = Model;
+}
+<div class="p-4">
+    <div>
+        <h1 class="text-3xl font-bold">Pending devices</h1>
+        <p>Here you can see the devices that are pending. Review the devices and you can approve or reject a device.</p>
+    </div>
+    <div class="flex flex-col md:flex-row md:space-x-2 md:space-y-0 space-y-2">
+        <div id="map" class="w-full h-[50vh] max-w-xl border rounded-md shadow-md"></div>
+        <div id="devices" class="flex flex-col gap-4 w-full max-w-sm">
+            @foreach (var device in devices)
+            {
+                <div id="device-@device.Id"
+                     class="bg-gray-100 p-4 rounded-md shadow-md border device-info hidden">
+                    <h3 class="text-xl font-bold text-gray-800">Device Info</h3>
+                    <p class="text-gray-600 mt-2">Latitude: <b>@Html.DisplayFor(m => device.Latitude)°</b></p>
+                    <p class="text-gray-600 mt-2">Longitude: <b>@Html.DisplayFor(m => device.Longitude)°</b></p>
+                    <p class="text-gray-600 mt-2">Direction: <b>@Html.DisplayFor(m => device.Direction)° relative from north</b></p>
+                    <div class="flex m-auto pt-2">
+                        <form asp-controller="Approvals" asp-action="ApproveDevice" asp-route-id="@device.Id">
+                            <button class="bg-green-500 text-white p-2 rounded border border-green-200" type="submit">Approve</button>
+                        </form>
+                        <form asp-controller="Approvals" asp-action="RejectDevice" asp-route-id="@device.Id">
+                            <button class="bg-red-500 text-white p-2 rounded border border-green-200" type="submit">Reject</button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let map = L.map('map').setView([51.168300, 4.980980], 14)
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        
+        const devices = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(devices));
+        
+        devices.forEach((device) => {
+            const marker = L.marker([device.Latitude, device.Longitude])
+                .addTo(map)
+                .bindPopup(`Device ${device.Id}`);
+            marker.on('click', () => {
+                let deviceInfo = document.getElementById(`device-${device.Id}`);
+                let devicesDiv = document.getElementById('devices')
+                
+                /* if there's a non-hidden tag, hide it */
+                for (let child of devicesDiv.children) {
+                    if (!child.classList.contains('hidden')) {
+                        child.classList.add('hidden');
+                    }
+                }
+                
+                deviceInfo.classList.toggle('hidden');
+            });
+        });
+    </script>
+}

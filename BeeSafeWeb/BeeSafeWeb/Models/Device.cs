@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BeeSafeWeb.Models;
@@ -19,6 +20,11 @@ public class Device
     /// show up in the overview map.
     /// </summary>
     public bool IsApproved { get; set; }
+    
+    /// <summary>
+    /// Whether the device has been declined.
+    /// </summary>
+    public bool IsDeclined { get; set; }
 
     /// <summary>
     /// If true, the device is operating as usual. If false, that means the
