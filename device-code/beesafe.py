@@ -12,6 +12,14 @@ class MessageType(int, Enum):
     PONG = 1
     DETECTION_EVENT = 2
 
+class RegistrationDeviceError(Exception):
+    pass
+
+class NonExistantDeviceError(Exception):
+    pass
+
+class DeviceNotApprovedError(Exception):
+    pass
 
 class BeeSafeClient:
     """
@@ -37,7 +45,7 @@ class BeeSafeClient:
         r = requests.post(self.url + "/Device/Register", json=data)
 
         if r.status_code != 200:
-            raise Exception("Failed to register device.")
+            raise RegistrationDeviceError()
 
         try:
             id = r.json()["id"]
@@ -52,10 +60,9 @@ class BeeSafeClient:
         if status_code != 200:
             message = generic_message
             if status_code == 403:
-                message = "This device has not been approved yet."
+                raise DeviceNotApprovedError()
             elif status_code == 401:
-                message = "The supplied device id is incorrect."
-            raise Exception(message)
+                raise NonExistantDeviceError()
 
 
     def send_detection_event(self, hornet_direction: float, timestamp: datetime):
@@ -93,7 +100,12 @@ class BeeSafeClient:
 
         r = requests.post(self.url + "/Device/Ping", json=data)
 
-        self._check_status_code(r.status_code, "Failed to ping server.")
+        try:
+            self._check_status_code(r.status_code, "Failed to ping server.")
+        # We can safely ignore that
+        except DeviceNotApprovedError:
+            return
+
 
         response = r.json()
 
