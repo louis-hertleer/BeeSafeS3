@@ -4,9 +4,6 @@ name: Deploy to Azure
     branches:
       - main
       - pipelinedatabase-lh
-  pull_request: 
-    branches:
-      - main
 jobs:
   build-and-push:
     name: Build and Push Docker Image
@@ -42,8 +39,9 @@ jobs:
           SERVER_EXISTS=$(az mysql flexible-server show --name
           beesafe-mysql-server --resource-group BeeSafe --query "name" -o tsv ||
           echo "")
-          echo "Server Exists: $SERVER_EXISTS"
 
+          echo "Server Exists: $SERVER_EXISTS"
+          
           if [[ -n "$SERVER_EXISTS" ]]; then
             echo "MySQL server already exists, skipping creation."
           else
@@ -86,7 +84,7 @@ jobs:
       - name: Deploy Container to Azure Container Instance
         uses: nick-invision/retry@v2
         with:
-          timeout_minutes: 6
+          timeout_minutes: 3
           max_attempts: 3
           retry_wait_seconds: 15
           command: |
@@ -105,7 +103,6 @@ jobs:
               --ip-address public \
               --os-type Linux \
               --restart-policy Always
-
       - name: Get Public IP
         run: |
           echo "Container Instance Public IP:"
