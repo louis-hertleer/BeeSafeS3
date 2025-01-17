@@ -17,7 +17,7 @@ class BeeSafeClient:
     """
     This class allows you to interact with the application via messages.
     """
-    def __init__(self, url, device_id:str =""):
+    def __init__(self, url, latitude: float, longitude: float, direction: float, device_id:str =""):
         """
         :param str url: The URL of the application.
         :param str device_id: (optional) the ID of an already registered device.
@@ -25,13 +25,13 @@ class BeeSafeClient:
         self.url = url
         self.device_id = device_id
         if device_id == "":
-            self.device_id = self.__register_device()
+            self.device_id = self.__register_device(latitude, longitude, direction)
 
-    def __register_device(self) -> str:
+    def __register_device(self, latitude: float, longitude: float, direction: float) -> str:
         data = {
-            'latitude': 51.5,
-            'longitude': 5.05,
-            'direction': 25
+            'latitude': latitude,
+            'longitude': longitude,
+            'direction': direction
         }
 
         r = requests.post(self.url + "/Device/Register", json=data)
