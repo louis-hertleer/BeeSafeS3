@@ -3,7 +3,6 @@ name: Deploy to Azure
   push:
     branches:
       - main
-      - pipelineContInsttoContApp-lh
 jobs:
   build-and-push:
     name: Build and Push Docker Image
