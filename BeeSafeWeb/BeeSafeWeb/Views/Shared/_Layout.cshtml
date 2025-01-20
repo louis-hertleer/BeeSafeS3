@@ -29,6 +29,8 @@
         {
         <!-- Show Pending Devices when logged in -->
         <p><a asp-controller="Approvals" asp-action="Index" class="hover:text-gray-300 dark:hover:text-yellow-500">Show Pending Devices</a></p>
+        <p><a asp-controller="Nest" asp-action="Index" class="hover:text-gray-300 dark:hover:text-yellow-500">Nest</a></p>
+
 
         <!-- Logout button -->
         <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
