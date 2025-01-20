@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -8,39 +8,53 @@
     <link rel="stylesheet" href="~/BeeSafeWeb.styles.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/lib/leafletjs/leaflet.css" asp-append-version="true" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         #map {
-            width: 80vw; 
-            height: 65vh; 
+            width: 80vw;
+            height: 65vh;
         }
-
     </style>
 </head>
-<body>
-@* Admittedly a HACK but it won't work otherwise *@
+<body class="dark:bg-gray-900 dark:text-white bg-gray-100 text-gray-900 transition-all duration-300">
 @if (ViewData["Title"] as string != "Log in")
 {
-    <nav class="bg-slate-600 text-white p-4 flex justify-between items-center">
-        <!-- Left Side: Title -->
-        <p class="text-xl font-bold"><a asp-controller="Home" asp-action="Index">'t Geels Bieke</a></p>
-        <div class="flex space-x-4">
-            <p><a asp-controller="Approvals" asp-action="Index">Show Pending Devices</a></p>
-            <!-- Right Side: Login Button -->
-            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-            </form>
-        </div>
-    </nav>
+<nav class="bg-slate-600 dark:bg-gray-800 dark:border-b dark:border-gray-700 text-white p-4 flex justify-between items-center shadow-md sticky top-0 z-50">
+    <!-- Left Side: Title -->
+    <p class="text-xl font-bold"><a asp-controller="Home" asp-action="Index">'t Geels Bieke</a></p>
+
+    <div class="flex space-x-4">
+        @if (User.Identity.IsAuthenticated)
+        {
+        <!-- Show Pending Devices when logged in -->
+        <p><a asp-controller="Approvals" asp-action="Index" class="hover:text-gray-300 dark:hover:text-yellow-500">Show Pending Devices</a></p>
+
+        <!-- Logout button -->
+        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+            <button type="submit" class="nav-link btn btn-link text-white dark:text-gray-300 dark:hover:text-yellow-500">Logout</button>
+        </form>
+        }
+        else
+        {
+        <!-- Login button -->
+        <a asp-area="Identity" asp-page="/Account/Login" class="text-white dark:text-gray-300 dark:hover:text-yellow-500">Login</a>
+        }
+    </div>
+</nav>
 }
 
-<main>
+<main class="container mx-auto p-6">
     @if (@ViewData["BigTitle"] != null)
     {
-        <h1 class="text-3xl text-bold">@ViewData["BigTitle"]</h1>
+    <h1 class="text-3xl text-bold dark:text-yellow-500">@ViewData["BigTitle"]</h1>
     }
     @RenderBody()
 </main>
+
+
 <script src="~/lib/leafletjs/leaflet.js"></script>
+
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

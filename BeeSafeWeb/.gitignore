@@ -1,3 +1,4 @@
 .idea/
 # because SOME people want to use crappy Visual Studio
 .vs/
+node_modules/
