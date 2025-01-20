@@ -20,10 +20,10 @@ jobs:
         dotnet-version: 8
 
     - name: Install dependencies
-      run: dotnet restore
+      run: dotnet restore "BeeSafeWeb/BeeSafeWeb.csproj"
       
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build "BeeSafeWeb/BeeSafeWeb.csproj" --configuration Release --no-restore 
     
     - name: Test
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet test "BeeSafeWeb/BeeSafeWeb.csproj" --no-restore --verbosity normal
