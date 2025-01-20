@@ -3,7 +3,7 @@ name: Deploy to Azure
   push:
     branches:
       - main
-      - pipelinedatabase-lh
+      - pipelineContInsttoContApp-lh
 jobs:
   build-and-push:
     name: Build and Push Docker Image
@@ -73,14 +73,28 @@ jobs:
           else
             echo "Database 'beesafe-db' already exists. Skipping creation."
           fi
-      - name: Construct Connection String
-        id: connection-string
-        run: >
-          # Construct the connection string using secrets
-          CONNECTION_STRING="Server=dbbeesafe.database.windows.net;Database=beesafe-db;User
-          Id=${{ secrets.MYSQL_USER }};Password=${{ secrets.MYSQL_PASSWORD }};"
-          # Set the environment variable for use in subsequent steps
-          echo "CONNECTION_STRING=$CONNECTION_STRING" >> $GITHUB_ENV
+        
+      - name: Check if Container App Environment Exists
+        run: |
+          ENV_NAME="caebeesafe"
+          RESOURCE_GROUP="BeeSafe"
+          LOCATION="uksouth"
+          EXISTING_ENV=$(az containerapp env show \
+            --name $ENV_NAME \
+            --resource-group $RESOURCE_GROUP \
+            --query "name" \
+            --output tsv || echo "none")
+
+          if [ "$EXISTING_ENV" = "none" ]; then
+            echo "Environment does not exist. Creating..."
+            az containerapp env create \
+              --name $ENV_NAME \
+              --resource-group $RESOURCE_GROUP \
+              --location $LOCATION
+          else
+            echo "Environment $ENV_NAME already exists. Skipping creation."
+          fi
+          
       - name: Deploy Container to Azure Container Instance
         uses: nick-invision/retry@v2
         with:
@@ -88,26 +102,26 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 15
           command: |
-            az container create \
-              --name beesafe-api-container \
+            az containerapp create \
+              --name beesafe-app-container \
               --resource-group BeeSafe \
               --image docker.io/${{ secrets.DOCKER_USERNAME }}/beesafeapp:latest \
               --cpu 0.5 \
               --memory 1.0 \
-              --location uksouth \
-              --registry-login-server docker.io \
+              --registry-server docker.io \
               --registry-username ${{ secrets.DOCKER_USERNAME }} \
               --registry-password ${{ secrets.DOCKER_PASSWORD }} \
-              --ports 8080 8081 \
-              --environment-variables ConnectionStrings__DefaultConnection="Server=tcp:dbbeesafe.database.windows.net,1433;Initial Catalog=beesafe;Persist Security Info=False;User ID=${{ secrets.MYSQL_USER }};Password=${{ secrets.MYSQL_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" \
-              --ip-address public \
-              --os-type Linux \
-              --restart-policy Always
-      - name: Get Public IP
+              --target-port 8080 \
+              --env-vars ConnectionStrings__DefaultConnection="Server=tcp:dbbeesafe.database.windows.net,1433;Initial Catalog=beesafe;Persist Security Info=False;User ID=${{ secrets.MYSQL_USER }};Password=${{ secrets.MYSQL_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" \
+              --ingress external \
+              --environment caebeesafe
+
+      - name: Get Domain Name
         run: |
-          echo "Container Instance Public IP:"
-          az container show \
-            --name beesafe-api-container \
-            --resource-group BeeSafe \
-            --query "ipAddress.ip" \
-            --output tsv
+              echo "Container App Public URL:"
+              az containerapp show \
+                --name beesafe-app-container \
+                --resource-group BeeSafe \
+                --query "properties.configuration.ingress.fqdn" \
+                --output tsv
+      
