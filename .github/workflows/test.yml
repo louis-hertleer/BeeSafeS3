@@ -1,0 +1,32 @@
+name: 'Test application'
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+    paths:
+    - '**.cs'
+    - '**.csproj'
+
+jobs:
+  build-and-test:
+    name: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8
+
+    - name: Install dependencies
+      working-directory: 'BeeSafeWeb'
+      run: dotnet restore "BeeSafeWeb/BeeSafeWeb.csproj"
+      
+    - name: Build
+      working-directory: 'BeeSafeWeb'
+      run: dotnet build "BeeSafeWeb/BeeSafeWeb.csproj" --configuration Release --no-restore 
+    
+    - name: Test
+      working-directory: 'BeeSafeWeb'
+      run: dotnet test "BeeSafeWeb/BeeSafeWeb.csproj" --no-restore --verbosity normal
