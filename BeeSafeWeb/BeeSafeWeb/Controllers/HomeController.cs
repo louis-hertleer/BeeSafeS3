@@ -38,18 +38,20 @@ namespace BeeSafeWeb.Controllers
                 .ToList();
 
             // get information from the nest estimate
-            var nestEstimate = _context.NestEstimates
+            var nestEstimates = _context.NestEstimates
                 .Select(n => new
                 {
                     n.EstimatedLatitude,
                     n.EstimatedLongitude,
-                    n.AccuracyLevel
+                    n.AccuracyLevel,
+                    n.IsDestroyed,  // Add IsDestroyed to track active vs neutralized nests
+                    n.Timestamp
                 })
-                .FirstOrDefault();
+                .ToList();
 
             // Pass data to the view
             ViewData["Devices"] = devices;
-            ViewData["NestEstimate"] = nestEstimate;
+            ViewData["NestEstimates"] = nestEstimates;
 
             return View();
         }

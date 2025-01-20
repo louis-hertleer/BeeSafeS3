@@ -1,43 +1,61 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
-    var devices = ViewData["Devices"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
-    var nestEstimate = ViewData["NestEstimate"] as dynamic;
+ViewData["Title"] = "Home Page";
+var devices = ViewData["Devices"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
 }
+
 <div class="container mx-auto mt-6">
-    <div class="flex justify-left mb-2">
-        <h1 class="text-5xl font-bold text-gray-800">Overview:</h1>
+    <div class="flex justify-left mb-6">
+        <h1 class="text-5xl font-extrabold text-gray-900 dark:text-white">🐝 Overview</h1>
     </div>
-    <div class="flex justify-center ">
-        <div class="flex flex-wrap lg:flex-nowrap items-center gap-8 p-12 rounded-lg">
+    <div class="flex justify-center">
+        <div class="flex flex-wrap lg:flex-nowrap items-center gap-8 p-12 rounded-lg shadow-lg 
+                    bg-gradient-to-r from-yellow-200 to-orange-300 dark:from-gray-800 dark:to-gray-900">
 
-            <!-- leaflet map -->
+            <!-- Leaflet map -->
+            <div id="map" class="w-full h-[60vh] max-w-xl border rounded-lg shadow-lg 
+                        bg-white dark:bg-gray-800"></div>
 
-            <div id="map" class="w-full h-[50vh] max-w-xl border rounded-md shadow-md"></div>
+            <!-- Information boxes -->
+            <div class="flex flex-col gap-6 w-full max-w-sm">
 
-            <!-- information boxes -->
-            <div class="flex flex-col gap-4 w-full max-w-sm">
-                <div class="bg-gray-100 p-4 rounded-md shadow-md border">
-                    <h3 class="text-xl font-bold text-gray-800">Info</h3>
-                    <p class="text-gray-600 mt-2">
-                        Online devices: @devices.Count(d => d.IsOnline)
+                <!-- Hornet Nest Info Box -->
+                <div class="bg-white dark:bg-gray-700 dark:text-white p-6 rounded-lg shadow-lg border border-yellow-400 dark:border-yellow-600">
+                    <h3 class="text-2xl font-bold flex items-center">
+                        <span class="mr-2">🐝</span> Hornet Nest Info
+                    </h3>
+                    <p id="default-message" class="text-gray-600 dark:text-gray-300 mt-4 italic">
+                        Click on a nest to view details.
                     </p>
-                    <p class="text-gray-600 mt-2">
-                        @if (ViewData["NestEstimate"] != null)
-                        {
-                            <p class="text-gray-600 mt-2">Accuracy Radius: @nestEstimate.AccuracyLevel meters</p>
-                        }
-                        else
-                        {
-                            <p class="text-gray-600 mt-2">Nest estimate data is not available.</p>
-                        }                    
+                    <p id="accuracy-label" class="text-gray-700 dark:text-gray-300 mt-2 hidden">
+                        📏 Accuracy Radius: <b id="accuracy"></b> meters
+                    </p>
+                    <p id="timestamp-label" class="text-gray-700 dark:text-gray-300 mt-2 hidden">
+                        ⏱ Last Updated: <b id="timestamp"></b>
+                    </p>
+                    <p id="status-label" class="text-gray-700 dark:text-gray-300 mt-2 hidden">
+                        ⚠ Status: <b id="status"></b>
                     </p>
                 </div>
 
-                <!-- information of selected device -->
-                <div class="bg-gray-100 p-4 rounded-md shadow-md border device-info">
-                    <h3 class="text-xl font-bold text-gray-800">Device Info</h3>
-                    <p class="text-gray-600 mt-2">Click on a device marker to see details.</p>
+                <!-- Device Overview Box -->
+                <div class="bg-white dark:bg-gray-700 dark:text-white p-6 rounded-lg shadow-lg border border-blue-400 dark:border-blue-600">
+                    <h3 class="text-2xl font-bold flex items-center">
+                        <span class="mr-2">📡</span> Device Overview
+                    </h3>
+                    <p class="mt-4">Total Devices: <b>@devices.Count()</b></p>
+                    <p class="mt-2">Online Devices: <b id="online-device-count">@devices.Count(d => d.IsOnline)</b></p>
+                    <p class="mt-2">Tracking Mode: <b>@devices.Count(d => d.IsTracking)</b></p>
                 </div>
+
+                <!-- Device Info Box -->
+                <div class="bg-white dark:bg-gray-700 dark:text-white p-6 rounded-lg shadow-lg border border-green-400 dark:border-green-600 device-info">
+                    <h3 class="text-2xl font-bold flex items-center">
+                        <span class="mr-2">🔍</span> Device Info
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300 mt-4">Click on a device marker to see details.</p>
+                </div>
+
             </div>
         </div>
     </div>
@@ -46,56 +64,108 @@
 @section Scripts
 {
     <script>
-        var map = L.map('map').setView([51.168300, 4.980980], 20);
+        var map = L.map('map');
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
-        // Add the circle for the nest estimate
-        @if (nestEstimate != null)
-        {
-            <text>
-                    // variable to get the data of the nest estimate
-                    var circleData = {
-                        lat: @nestEstimate.EstimatedLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                        lng: @nestEstimate.EstimatedLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                        radius: @nestEstimate.AccuracyLevel
-                    };
+        // Store device bounds to fit map to them later
+        var deviceBounds = [];
 
-                    // displaying the circle
-                    var circle = L.circle([circleData.lat, circleData.lng], {
-                        color: 'red',
-                        fillColor: '#f03',
-                        fillOpacity: 0.5,
-                        radius: circleData.radius
-                    }).addTo(map).bindPopup(`Accuracy ${circleData.radius}m`);
-            </text>
-        }
+        // Device data from the backend
+        var devices = [
+            @foreach (var device in devices)
+            {
+                <text>, {
+                    lat: @device.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    lng: @device.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    id: '@device.Id',
+                    isOnline: @(device.IsOnline ? "true" : "false"),
+                    isTracking: @(device.IsTracking ? "true" : "false"),
+                    lastActive: '@device.LastActiveString'
+                }, </text>
+            }
+        ];
 
-        // get device data and add markers
-        var devices = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(devices));
-
-        //loop over devices and show a marker for each device
+        // Add markers for all devices
         devices.forEach(device => {
-            if (device.Latitude && device.Longitude) {
-                var marker = L.marker([device.Latitude, device.Longitude])
+            if (device.lat && device.lng) {
+                var markerColor = device.isOnline === "true" ? "blue" : "gray";
+
+                var deviceMarker = L.marker([device.lat, device.lng])
                     .addTo(map)
-                    .bindPopup(`Device ${device.Id}`);
-                marker.on('click', function () {
+                    .bindPopup(`
+                        <b>Device Info</b><br>
+                        Status: ${device.isOnline === "true" ? 'Online' : 'Offline'}<br>
+                        Mode: ${device.isTracking === "true" ? 'Tracking' : 'Defence'}<br>
+                        Last Active: ${device.lastActive}
+                    `);
+
+                // Store marker location to fit bounds later
+                deviceBounds.push([device.lat, device.lng]);
+
+                deviceMarker.on('click', function () {
                     document.querySelector('.device-info').innerHTML = `
-                            <h3 class="text-xl font-bold text-gray-800">Device Info</h3>
-                            <p class="text-gray-600 mt-2">Status: ${device.IsOnline ? 'Online' : 'Offline'}</p>
-                            <p class="text-gray-600 mt-2">Current mode: <b>${device.IsTracking ? 'Tracking' : 'Defence'}</b></p>
-                            <p class="text-gray-600 mt-2">Last active: <b>${device.LastActiveString}</b></p>
-                        `;
+                        <h3 class="text-xl font-bold text-gray-800 dark:text-white">Device Info</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mt-2">Status: ${device.isOnline === "true" ? 'Online' : 'Offline'}</p>
+                        <p class="text-gray-600 dark:text-gray-300 mt-2">Current mode: <b>${device.isTracking === "true" ? 'Tracking' : 'Defence'}</b></p>
+                        <p class="text-gray-600 dark:text-gray-300 mt-2">Last active: <b>${device.lastActive}</b></p>
+                    `;
                 });
-            } else {
-                console.warn("Device with missing coordinates:", device);
             }
         });
+
+        // Adjust map to fit all device markers
+        if (deviceBounds.length > 0) {
+            map.fitBounds(deviceBounds, {
+                padding: [50, 50], // Add padding around the bounds
+                maxZoom: 16,
+                animate: true
+            });
+        } else {
+            map.setView([51.168300, 4.980980], 10); // Default view if no devices found
+        }
+
+        // Nest data array from the backend
+        var nestEstimates = [
+            @foreach (var nest in nestEstimates)
+            {
+                <text>, {
+                    lat: @nest.EstimatedLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    lng: @nest.EstimatedLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    radius: @nest.AccuracyLevel,
+                    timestamp: '@nest.Timestamp.ToString("dd-MM-yyyy HH:mm:ss")',
+                    isDestroyed: @(nest.IsDestroyed ? 1 : 0)
+                }, </text>
+            }
+        ];
+
+        // Add circles for all nest estimates
+        nestEstimates.forEach(nest => {
+            var circleColor = nest.isDestroyed === 1 ? "green" : "red";
+            var fillColor = nest.isDestroyed === 1 ? "#0f0" : "#f03";
+
+            var circle = L.circle([nest.lat, nest.lng], {
+                color: circleColor,
+                fillColor: fillColor,
+                fillOpacity: 0.5,
+                radius: nest.radius
+            }).addTo(map).bindPopup(`Accuracy: ${nest.radius}m`);
+
+            // Click event to show nest details
+            circle.on('click', function () {
+                document.getElementById('accuracy').innerText = nest.radius;
+                document.getElementById('timestamp').innerText = nest.timestamp;
+                document.getElementById('status').innerText = nest.isDestroyed === 1 ? "Destroyed" : "Active";
+
+                // Hide the default message and show actual info
+                document.getElementById('default-message').style.display = 'none';
+                document.getElementById('accuracy-label').classList.remove('hidden');
+                document.getElementById('timestamp-label').classList.remove('hidden');
+                document.getElementById('status-label').classList.remove('hidden');
+            });
+        });
     </script>
-
-
 }
