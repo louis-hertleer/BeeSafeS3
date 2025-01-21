@@ -14,7 +14,7 @@ public class ApprovalsController : Controller
     {
         _deviceRepository = deviceRepository;
     }
-    
+
     // GET
     public IActionResult Index()
     {
@@ -22,7 +22,7 @@ public class ApprovalsController : Controller
             .Where(d => !d.IsApproved)
             .Where(d => !d.IsDeclined)
             .ToList();
-        
+
         return View(devices);
     }
 
@@ -61,7 +61,7 @@ public class ApprovalsController : Controller
         device.IsDeclined = true;
 
         _deviceRepository.Update(device);
-        
+
         return RedirectToAction("Index", "Approvals", new {});
     }
 }
