@@ -1,4 +1,5 @@
 using BeeSafeWeb.Data;
+using BeeSafeWeb.Service;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,7 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddSingleton<SetupService>();
 
 var app = builder.Build();
 
@@ -46,5 +48,7 @@ using (var scope = app.Services.CreateScope())
     context.Database.EnsureCreated();
     appContext.Database.Migrate();
 }
+
+app.UseMiddleware<SetupMiddleware>();
 
 app.Run();

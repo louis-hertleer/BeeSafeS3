@@ -1,0 +1,51 @@
+@page
+@model BeeSafeWeb.Pages.SetupModel
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Setup";
+}
+
+<div class="flex justify-center, items-center">
+    <div class="max-w-screen-md dark:bg-gray-800 p-8 rounded rounded-xl shadow-xl m-auto">
+        <h1 class="text-3xl font-bold">First time setup</h1>
+        <p>Welcome to BeeSafe! To start, you will need to create a new user.</p>
+        <form method="post">
+            <div class="mb-4">
+                <label asp-for="Input.Email"
+                       class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                <input asp-for="Input.Email"
+                       autocomplete="username"
+                       aria-required="true"
+                       placeholder="name@example.com"
+                       class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md mt-2 
+                              focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:placeholder-gray-400"
+                       required />
+            </div>
+            <div class="mb-4">
+                <label asp-for="Input.Password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                <input asp-for="Input.Password"
+                       autocomplete="new-password"
+                       aria-required="true"
+                       placeholder="password"
+                       class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md mt-2 
+                              focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:placeholder-gray-400"
+                       required />
+            </div>
+            <div class="mb-4">
+                <label asp-for="Input.ConfirmPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm password</label>
+                <input
+                    asp-for="Input.ConfirmPassword"
+                    autocomplete="new-password"
+                    aria-required="true"
+                    placeholder="password"
+                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md mt-2 
+                              focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:placeholder-gray-400"
+                    required />
+            </div>
+            <button type="submit" class="p-4 bg-yellow-500 rounded border border-yellow-200">
+                Create user
+            </button>
+        </form>
+    </div>
+</div>
