@@ -4,9 +4,11 @@ using System.Linq;
 using BeeSafeWeb.Data;
 using X.PagedList.Extensions;
 using X.PagedList.Mvc.Core;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BeeSafeWeb.Controllers
 {
+    [Authorize]
     public class NestController : Controller
     {
         private readonly BeeSafeContext _context;
