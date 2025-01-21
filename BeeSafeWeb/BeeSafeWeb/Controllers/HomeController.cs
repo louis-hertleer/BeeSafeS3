@@ -31,9 +31,7 @@ public class HomeController : Controller
                 d.Longitude,
                 d.IsOnline,
                 d.IsTracking,
-                d.IsApproved,
-                d.LastActiveString,
-                d.IsDeclined,
+                d.LastActiveString
             }).ToList());
 
         var nestEstimates = (await _nestEstimateRepository.GetAllAsync())
@@ -43,7 +41,7 @@ public class HomeController : Controller
                 n.EstimatedLongitude,
                 n.AccuracyLevel,
                 n.IsDestroyed,
-                n.Timestamp
+                LastUpdatedString = n.LastUpdatedString // Add the formatted string
             }).ToList();
 
         ViewData["Devices"] = devices;
@@ -51,6 +49,7 @@ public class HomeController : Controller
 
         return View();
     }
+
 
     public IActionResult Privacy()
     {

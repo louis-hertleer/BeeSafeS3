@@ -13,8 +13,12 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
                     bg-gradient-to-r from-yellow-200 to-orange-300 dark:from-gray-800 dark:to-gray-900">
 
             <!-- Leaflet map -->
-            <div id="map" class="w-full h-[60vh] max-w-xl border rounded-lg shadow-lg 
-                        bg-white dark:bg-gray-800"></div>
+            <div class="w-full sm:w-3/4 md:w-2/3 lg:w-1/2 xl:w-2/3 min-w-[450px] max-w-[900px] 
+            border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden shadow-md">
+                <div id="map" class="w-full h-[50vh] md:h-[60vh] dark:bg-gray-700"></div>
+            </div>
+
+
 
             <!-- Information boxes -->
             <div class="flex flex-col gap-6 w-full max-w-sm">
@@ -33,6 +37,7 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
                     <p id="timestamp-label" class="text-gray-700 dark:text-gray-300 mt-2 hidden">
                         ⏱ Last Updated: <b id="timestamp"></b>
                     </p>
+
                     <p id="status-label" class="text-gray-700 dark:text-gray-300 mt-2 hidden">
                         ⚠ Status: <b id="status"></b>
                     </p>
@@ -121,7 +126,7 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
         if (deviceBounds.length > 0) {
             map.fitBounds(deviceBounds, {
                 padding: [50, 50], // Add padding around the bounds
-                maxZoom: 16,
+                maxZoom: 18,
                 animate: true
             });
         } else {
@@ -136,7 +141,7 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
                     lat: @nest.EstimatedLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
                     lng: @nest.EstimatedLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
                     radius: @nest.AccuracyLevel,
-                    timestamp: '@nest.Timestamp.ToString("dd-MM-yyyy HH:mm:ss")',
+                    timestamp: '@nest.LastUpdatedString',
                     isDestroyed: @(nest.IsDestroyed ? 1 : 0)
                 }, </text>
             }
