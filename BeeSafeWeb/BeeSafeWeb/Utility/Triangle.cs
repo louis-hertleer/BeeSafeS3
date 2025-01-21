@@ -4,7 +4,7 @@ namespace BeeSafeWeb.Utility;
 
 public class Triangle
 {
-    public Point[] Points { get; set; }
+    public Point[] Points { get; private set; }
 
     /// <summary>
     /// Returns the centroid of the triangle.
@@ -45,12 +45,14 @@ public class Triangle
 
         Point[] points = new Point[rays.Length];
 
+        points[0] = rays[0].Intersect(rays[1]) ?? throw new Exception("Ray 1 never intersects with Ray 2");
+        points[1] = rays[1].Intersect(rays[2]) ?? throw new Exception("Ray 2 never intersects with Ray 3");
+        points[2] = rays[2].Intersect(rays[0]) ?? throw new Exception("Ray 3 never intersects with Ray 1");
+
         Triangle triangle = new Triangle(points);
 
         /* find the longest path to the center. */
-        double length = triangle.Points.Select(p => p.Distance(triangle.Center))
-                                       .ToList()
-                                       .Max();
+        double length = triangle.Points.Select(p => p.Distance(triangle.Center)).Max();
 
         return new Circle(length, triangle.Center);
     }
