@@ -26,8 +26,14 @@ public class SetupModel : PageModel
         _userManager = userManager;
     }
 
-    public void OnGet()
+    public IActionResult OnGet()
     {
+        if (!_setupService.IsFirstTime)
+        {
+            return RedirectToPage("/Index");
+        }
+
+        return Page();
     }
 
     public async Task<IActionResult> OnPost()
