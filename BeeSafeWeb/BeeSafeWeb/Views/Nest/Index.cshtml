@@ -10,14 +10,9 @@
         <h1 class="text-3xl font-bold dark:text-yellow-400 text-center md:text-left">Nest Estimates</h1>
         <p class="dark:text-gray-300 text-center md:text-left">Here you can view and update the status of hornet nests.</p>
     </div>
+    
     <!-- Filtering Form -->
-    <form method="get" class="mt-4 flex flex-wrap gap-4">
-        <div class="flex-grow">
-            <input type="text" name="searchLocation" value="@ViewBag.SearchLocation"
-                   placeholder="Search by Location"
-                   class="w-full p-2 border rounded-md dark:bg-gray-700 dark:text-white" />
-        </div>
-
+    <form method="get" class="mt-4 flex flex-wrap gap-4 justify-end ">
         <div>
             <select name="isDestroyed" class="p-2 border rounded-md dark:bg-gray-700 dark:text-white">
                 <option value="">All</option>
@@ -35,6 +30,7 @@
             </a>
         </div>
     </form>
+    
     <div class="overflow-x-auto">
         <table class="w-full border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-300 shadow-lg mt-6 text-sm md:text-base">
             <thead class="bg-gray-300 dark:bg-gray-700 ">
@@ -69,12 +65,13 @@
                     <td class="p-2 md:p-3">
                         <form method="post" asp-action="UpdateStatus" asp-controller="Nest">
                             <input type="hidden" name="id" value="@nest.Id" />
-                            <select name="isDestroyed" class="w-full p-2 border rounded-md dark:bg-gray-700 dark:text-white">
+                            <select name="isDestroyed" class="w-full p-2 border rounded-md dark:bg-gray-700 dark:text-white" onchange="this.form.submit()">
                                 <option value="false" selected="@(nest.IsDestroyed == false)">Active</option>
                                 <option value="true" selected="@(nest.IsDestroyed == true)">Destroyed</option>
                             </select>
                         </form>
                     </td>
+
                 </tr>
             }
             </tbody>
@@ -174,7 +171,7 @@
                     maxZoom: 19,
                 }).addTo(map);
             } else {
-                map.setView([lat, lng], 15);
+                map.setView([lat, lng], 18);
             }
 
             // Remove existing circle if present
@@ -182,7 +179,6 @@
                 map.removeLayer(circle);
             }
 
-            // Determine circle color based on destruction status
             const circleColor = isDestroyed ? 'green' : 'red';
             const fillColor = isDestroyed ? '#28a745' : '#dc3545';
 

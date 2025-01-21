@@ -16,25 +16,21 @@ namespace BeeSafeWeb.Controllers
             _context = context;
         }
 
-        public IActionResult Index(string searchLocation, bool? isDestroyed, int? page)
+        public IActionResult Index(bool? isDestroyed, int? page)
         {
             int pageSize = 5;
             int pageNumber = page ?? 1;
 
             var nests = _context.NestEstimates.AsQueryable();
 
-            // Apply filters
-            if (!string.IsNullOrEmpty(searchLocation))
-            {
-                nests = nests.Where(n => n.EstimatedLatitude.ToString().Contains(searchLocation) || 
-                                         n.EstimatedLongitude.ToString().Contains(searchLocation));
-            }
+       
 
             if (isDestroyed.HasValue)
             {
                 nests = nests.Where(n => n.IsDestroyed == isDestroyed.Value);
             }
-
+            
+         
             var pagedList = nests
                 .OrderBy(n => n.Id)
                 .Select(n => new NestEstimate
@@ -47,7 +43,6 @@ namespace BeeSafeWeb.Controllers
                 })
                 .ToPagedList(pageNumber, pageSize);
 
-            ViewBag.SearchLocation = searchLocation;
             ViewBag.IsDestroyed = isDestroyed;
 
             return View(pagedList);

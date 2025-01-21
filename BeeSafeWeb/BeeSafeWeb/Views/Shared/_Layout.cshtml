@@ -20,30 +20,52 @@
 <body class="dark:bg-gray-900 dark:text-white bg-gray-100 text-gray-900 transition-all duration-300">
 @if (ViewData["Title"] as string != "Log in")
 {
-<nav class="bg-slate-600 dark:bg-gray-800 dark:border-b dark:border-gray-700 text-white p-4 flex justify-between items-center shadow-md sticky top-0 z-50">
+<nav class="bg-slate-600 dark:bg-gray-800 dark:border-b dark:border-gray-700 text-white p-4 flex items-center shadow-md sticky top-0 z-90">
     <!-- Left Side: Title -->
-    <p class="text-xl font-bold"><a asp-controller="Home" asp-action="Index">'t Geels Bieke</a></p>
+    <p class="text-xl font-bold flex-1">
+        <a asp-controller="Home" asp-action="Index">'t Geels Bieke</a>
+    </p>
 
-    <div class="flex space-x-4">
-        @if (User.Identity.IsAuthenticated)
-        {
-        <!-- Show Pending Devices when logged in -->
-        <p><a asp-controller="Approvals" asp-action="Index" class="hover:text-gray-300 dark:hover:text-yellow-500">Show Pending Devices</a></p>
-        <p><a asp-controller="Nest" asp-action="Index" class="hover:text-gray-300 dark:hover:text-yellow-500">Nest</a></p>
+    <!-- Mobile Menu Button -->
+    <button id="menuToggle" class="md:hidden text-white focus:outline-none">
+        <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+        </svg>
+    </button>
 
+    <!-- Navigation Links (Hidden on Small Screens) -->
+    <div id="navLinks" class="hidden absolute top-16 left-0 w-full bg-slate-700 md:static md:flex md:flex-row md:space-x-4 md:bg-transparent shadow-lg rounded-b-lg md:rounded-none border-t border-gray-600 md:border-none transition-all duration-300 ease-in-out md:w-auto">
+        <div class="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center">
+            @if (User.Identity.IsAuthenticated)
+            {
+            <p><a asp-controller="Approvals" asp-action="Index" class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">Show Pending Devices</a></p>
+            <p><a asp-controller="Nest" asp-action="Index" class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">Nest</a></p>
 
-        <!-- Logout button -->
-        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button type="submit" class="nav-link btn btn-link text-white dark:text-gray-300 dark:hover:text-yellow-500">Logout</button>
-        </form>
-        }
-        else
-        {
-        <!-- Login button -->
-        <a asp-area="Identity" asp-page="/Account/Login" class="text-white dark:text-gray-300 dark:hover:text-yellow-500">Login</a>
-        }
+            <!-- Logout button -->
+            <form class="block text-center md:inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                <button type="submit" class="nav-link btn btn-link text-white dark:text-gray-300 dark:hover:text-yellow-500 hover:bg-gray-600 px-6 py-2 transition-colors rounded-md">
+                    Logout
+                </button>
+            </form>
+            }
+            else
+            {
+            <a asp-area="Identity" asp-page="/Account/Login" class="block text-center md:inline text-white dark:text-gray-300 dark:hover:bg-yellow-500 hover:bg-gray-600 px-6 py-2 transition-colors rounded-md">
+                Login
+            </a>
+            }
+        </div>
     </div>
 </nav>
+
+<!-- Responsive Menu Toggle Script -->
+<script>
+    document.getElementById('menuToggle').addEventListener('click', function () {
+        const navLinks = document.getElementById('navLinks');
+        navLinks.classList.toggle('hidden');
+    });
+</script>
+
 }
 
 <main class="container mx-auto p-6">
