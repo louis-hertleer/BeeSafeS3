@@ -1,7 +1,6 @@
 name: 'Test application'
 
 on:
-  push:
   pull_request:
     branches: [ main ]
     paths:
