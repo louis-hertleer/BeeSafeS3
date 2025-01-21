@@ -52,18 +52,29 @@ namespace BeeSafeWeb.Controllers
 
 
         [HttpPost]
-        public IActionResult UpdateStatus(Guid id, bool isDestroyed)
+        public IActionResult BatchUpdate(Dictionary<Guid, NestUpdateModel> nestUpdates)
         {
-            var nest = _context.NestEstimates.Find(id);
-            if (nest == null)
+            if (nestUpdates != null && nestUpdates.Any())
             {
-                return NotFound();
+                foreach (var update in nestUpdates.Values)
+                {
+                    var nest = _context.NestEstimates.Find(update.Id);
+                    if (nest != null)
+                    {
+                        nest.IsDestroyed = update.IsDestroyed;
+                    }
+                }
+                _context.SaveChanges();
             }
-
-            nest.IsDestroyed = isDestroyed;
-            _context.SaveChanges();
 
             return RedirectToAction(nameof(Index));
         }
+
+        public class NestUpdateModel
+        {
+            public Guid Id { get; set; }
+            public bool IsDestroyed { get; set; }
+        }
+
     }
 }
