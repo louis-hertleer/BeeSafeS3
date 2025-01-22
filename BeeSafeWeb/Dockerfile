@@ -10,6 +10,7 @@ WORKDIR /src
 COPY ["BeeSafeWeb/BeeSafeWeb.csproj", "BeeSafeWeb/"]
 COPY package.json .
 COPY package-lock.json .
+COPY tailwind.config.js .
 RUN apt update
 RUN apt install -y npm
 RUN npm install
