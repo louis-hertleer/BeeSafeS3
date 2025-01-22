@@ -2,7 +2,7 @@ name: Deploy to Azure
 'on':
   push:
     branches:
-      - pielin
+      - main
 jobs:
   build-and-push:
     name: Build and Push Docker Image
