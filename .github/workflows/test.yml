@@ -20,12 +20,12 @@ jobs:
 
     - name: Install dependencies
       working-directory: 'BeeSafeWeb'
-      run: dotnet restore "BeeSafeWeb/BeeSafeWeb.csproj"
+      run: dotnet restore "BeeSafeWeb.Utility/BeeSafeWeb.Utility.csproj"
       
     - name: Build
       working-directory: 'BeeSafeWeb'
-      run: dotnet build "BeeSafeWeb/BeeSafeWeb.csproj" --configuration Release --no-restore 
+      run: dotnet build "BeeSafeWeb.Utility/BeeSafeWeb.Utility.csproj" --configuration Release --no-restore 
     
     - name: Test
       working-directory: 'BeeSafeWeb'
-      run: dotnet test "BeeSafeWeb/BeeSafeWeb.csproj" --no-restore --verbosity normal
+      run: dotnet test "BeeSafeWeb.Utility/BeeSafeWeb.Utility.csproj" --no-restore --verbosity normal
