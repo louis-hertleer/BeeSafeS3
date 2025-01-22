@@ -59,7 +59,7 @@ namespace BeeSafeWeb.Data
                         EstimatedLongitude = 4.980980,
                         AccuracyLevel = 13.0,
                         IsDestroyed = false,
-                        Timestamp = DateTime.UtcNow
+                        Timestamp = DateTime.Now
                     },
                     new NestEstimate
                     {
@@ -68,7 +68,7 @@ namespace BeeSafeWeb.Data
                         EstimatedLongitude = 4.981586,
                         AccuracyLevel = 15.0,
                         IsDestroyed = true,
-                        Timestamp = DateTime.UtcNow
+                        Timestamp = DateTime.Now
                     },
 
                     // Additional nest in Geel
@@ -79,7 +79,7 @@ namespace BeeSafeWeb.Data
                         EstimatedLongitude = 4.989000,
                         AccuracyLevel = 10.0,
                         IsDestroyed = false,
-                        Timestamp = DateTime.UtcNow
+                        Timestamp = DateTime.Now
                     },
 
                     // Nests in Antwerpen
@@ -90,7 +90,7 @@ namespace BeeSafeWeb.Data
                         EstimatedLongitude = 4.399708,
                         AccuracyLevel = 20.0,
                         IsDestroyed = false,
-                        Timestamp = DateTime.UtcNow
+                        Timestamp = DateTime.Now
                     },
                     new NestEstimate
                     {
@@ -99,7 +99,7 @@ namespace BeeSafeWeb.Data
                         EstimatedLongitude = 4.421349,
                         AccuracyLevel = 25.0,
                         IsDestroyed = false,
-                        Timestamp = DateTime.UtcNow
+                        Timestamp = DateTime.Now
                     },
                     new NestEstimate
                     {
@@ -108,7 +108,7 @@ namespace BeeSafeWeb.Data
                         EstimatedLongitude = 4.400025,
                         AccuracyLevel = 18.0,
                         IsDestroyed = false,
-                        Timestamp = DateTime.UtcNow
+                        Timestamp = DateTime.Now
                     },
                     new NestEstimate
                     {
@@ -117,7 +117,7 @@ namespace BeeSafeWeb.Data
                         EstimatedLongitude = 4.392032,
                         AccuracyLevel = 12.0,
                         IsDestroyed = true,
-                        Timestamp = DateTime.UtcNow
+                        Timestamp = DateTime.Now
                     }
                 }
             };
@@ -132,10 +132,10 @@ namespace BeeSafeWeb.Data
                 new DetectionEvent
                 {
                     Id = Guid.NewGuid(),
-                    Timestamp = DateTime.UtcNow,
+                    Timestamp = DateTime.Now,
                     HornetDirection = 50.0,
-                    FirstDetection = DateTime.UtcNow.AddMinutes(-10),
-                    SecondDetection = DateTime.UtcNow.AddMinutes(-5),
+                    FirstDetection = DateTime.Now.AddMinutes(-10),
+                    SecondDetection = DateTime.Now.AddMinutes(-5),
                     Device = devices[0],
                     KnownHornet = knownHornet
                 }
@@ -164,29 +164,6 @@ namespace BeeSafeWeb.Data
             };
 
             context.ColorCodes.AddRange(colorCodes);
-
-            // Users
-            var users = new List<User>
-            {
-                new User
-                {
-                    Id = Guid.NewGuid(),
-                    FirstName = "John",
-                    LastName = "Doe",
-                    Email = "john.doe@example.com",
-                    Password = "password123"
-                },
-                new User
-                {
-                    Id = Guid.NewGuid(),
-                    FirstName = "Jane",
-                    LastName = "Smith",
-                    Email = "jane.smith@example.com",
-                    Password = "securepassword"
-                }
-            };
-
-            context.Users.AddRange(users);
 
             context.SaveChanges();
         }

@@ -4,18 +4,25 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic>;
 }
 
 <!-- Parallax Scrolling Section -->
-<header class="relative h-[500px] bg-fixed bg-center bg-cover bg-[url('')] dark:bg-gray-800">
-    <div class="absolute inset-0 bg-black/60 flex items-center justify-center text-white">
-        <div class="text-center">
-            <h1 class="text-5xl font-bold dark:text-yellow-400">Welcome to BeeSafe</h1>
-            <p class="text-xl mt-4 dark:text-gray-300">Your solution for tracking hornet nests</p>
-            <button class="mt-6 bg-yellow-500 px-6 py-3 rounded-md text-lg font-semibold shadow-lg 
-                        hover:bg-yellow-600 dark:bg-yellow-400 dark:text-gray-900">
+<header class="relative h-[500px] bg-cover bg-center bg-[url('your-image-url.jpg')] dark:bg-gray-800">
+    <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+        <div class="text-center text-white px-6 md:px-12">
+            <h1 class="text-4xl md:text-6xl font-extrabold leading-tight dark:text-yellow-400">
+                Welcome to BeeSafe
+            </h1>
+            <p class="mt-4 text-lg md:text-xl dark:text-gray-300">
+                Your solution for tracking hornet nests with ease.
+            </p>
+            <a href="#learn-more"
+               class="mt-6 inline-block bg-yellow-500 text-lg font-semibold px-8 py-3 rounded-md shadow-md 
+                      transition duration-300 hover:bg-yellow-600 dark:bg-yellow-400 dark:text-gray-900">
                 Learn More
-            </button>
+            </a>
         </div>
     </div>
 </header>
+
+
 
 <!-- Full-Width Statistics Section -->
 <section class="bg-gray-800 dark:bg-gray-900 text-white py-16">
@@ -38,37 +45,41 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic>;
 <!-- Map and Info Section -->
 <div class="container mx-auto mt-10 dark:bg-gray-900">
     <div class="flex justify-left mb-6">
-        <h1 class="text-5xl font-bold text-gray-800 dark:text-yellow-400">Search Nest Locations:</h1>
+        <h1 class="text-5xl font-bold text-gray-800 dark:text-yellow-400">Search Hornet Nest Locations:</h1>
     </div>
 
-    <div class="flex flex-wrap lg:flex-nowrap items-center gap-8 p-12 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-lg">
+    <div class="flex flex-col lg:flex-row items-start gap-8 p-12 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-lg">
 
-        <!-- Leaflet Map -->
-        <div class="w-full max-w-2xl border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden shadow-md">
-            <div id="map" class="w-full h-[50vh] dark:bg-gray-700"></div>
+        <!-- Leaflet Map - Appears below on small screens, left on large screens -->
+        <div class="w-full lg:w-2/3 border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden shadow-md order-2 lg:order-1">
+            <div id="map" class="w-full h-[60vh] dark:bg-gray-700"></div>
         </div>
 
-        <!-- Information Box with Search Bar -->
-        <div class="w-full max-w-md bg-white dark:bg-gray-700 dark:text-white p-6 rounded-lg shadow-lg border border-gray-300 dark:border-gray-600">
-            <h3 class="text-2xl font-bold text-gray-800 dark:text-yellow-400 mb-4">Nest Info</h3>
+        <!-- Information Box with Search Bar (Appears first on small screens, right on large screens) -->
+        <div class="w-full lg:w-1/3 flex flex-col gap-6 order-1 lg:order-2">
 
-            <!-- Search Bar inside the box -->
-            <div class="flex w-full mb-6">
-                <input id="city-search" type="text" placeholder="Enter city name"
-                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm 
-                              focus:outline-none focus:ring-2 focus:ring-yellow-500 
-                              dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400">
-                <button onclick="searchCity()"
-                        class="ml-4 bg-yellow-500 px-6 py-3 rounded-md text-lg font-semibold shadow-md 
-                               hover:bg-yellow-600 dark:bg-yellow-400 dark:text-gray-900">
-                    Search
-                </button>
+            <div class="bg-white dark:bg-gray-700 dark:text-white p-6 rounded-lg shadow-lg border border-gray-300 dark:border-gray-600">
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-yellow-400 mb-4">Nest Info</h3>
+
+                <!-- Search Bar inside the box -->
+                <div class="flex w-full mb-6">
+                    <input id="city-search" type="text" placeholder="Enter city name"
+                           class="w-full p-3 border border-gray-300 rounded-lg shadow-sm 
+                                  focus:outline-none focus:ring-2 focus:ring-yellow-500 
+                                  dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400">
+                    <button onclick="searchCity()"
+                            class="ml-4 bg-yellow-500 px-6 py-3 rounded-md text-lg font-semibold shadow-md 
+                                   hover:bg-yellow-600 dark:bg-yellow-400 dark:text-gray-900">
+                        Search
+                    </button>
+                </div>
+
+                <p id="default-message" class="text-gray-600 dark:text-gray-300 mt-2">Select a circle to see more information.</p>
+                <p id="accuracy-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Accuracy Radius: <b id="accuracy"></b> meters</p>
+                <p id="timestamp-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Last Updated: <b id="timestamp"></b></p>
+                <p id="status-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Status: <b id="status"></b></p>
             </div>
 
-            <p id="default-message" class="text-gray-600 dark:text-gray-300 mt-2">Select a circle to see more information.</p>
-            <p id="accuracy-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Accuracy Radius: <b id="accuracy"></b> meters</p>
-            <p id="timestamp-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Last Updated: <b id="timestamp"></b></p>
-            <p id="status-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Status: <b id="status"></b></p>
         </div>
 
     </div>
@@ -80,186 +91,177 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic>;
 @section Scripts
 {
     <script>
-    var map = L.map('map').setView([51.168300, 4.980980], 10);
+        var map = L.map('map').setView([51.168300, 4.980980], 10);
 
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
 
-    // Nest data array from the backend
-    var nestEstimates = [
-        @foreach (var nest in (IEnumerable<dynamic>)ViewData["NestEstimates"])
-        {
-            <text>, {
-            lat: @nest.EstimatedLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            lng: @nest.EstimatedLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            radius: @nest.AccuracyLevel,
-            timestamp: '@nest.Timestamp.ToString("dd-MM-yyyy HH:mm:ss")',
-            isDestroyed: @(nest.IsDestroyed ? 1 : 0)
-        }, </text>
-        }
-    ];
+        // Nest data array from the backend
+        var nestEstimates = [
+            @foreach (var nest in (IEnumerable<dynamic>)ViewData["NestEstimates"])
+            {
+                <text>, {
+                lat: @nest.EstimatedLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                lng: @nest.EstimatedLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                radius: @nest.AccuracyLevel,
+                timestamp: '@nest.Timestamp.ToString("dd-MM-yyyy HH:mm:ss")',
+                isDestroyed: @(nest.IsDestroyed ? 1 : 0)
+            }, </text>
+            }
+        ];
 
-    // Add circles for all nest estimates
-    nestEstimates.forEach(nest => {
-        var circleColor = nest.isDestroyed === 1 ? "green" : "red";
-        var fillColor = nest.isDestroyed === 1 ? "#0f0" : "#f03";
+        // Add circles for all nest estimates
+        nestEstimates.forEach(nest => {
+            var circleColor = nest.isDestroyed === 1 ? "green" : "red";
+            var fillColor = nest.isDestroyed === 1 ? "#0f0" : "#f03";
 
-        var circle = L.circle([nest.lat, nest.lng], {
-            color: circleColor,
-            fillColor: fillColor,
-            fillOpacity: 0.5,
-            radius: nest.radius
-        }).addTo(map).bindPopup(`Accuracy: ${nest.radius}m`);
+            var circle = L.circle([nest.lat, nest.lng], {
+                color: circleColor,
+                fillColor: fillColor,
+                fillOpacity: 0.5,
+                radius: nest.radius
+            }).addTo(map).bindPopup(`Accuracy: ${nest.radius}m`);
 
-        // Click event to show nest details
-        circle.on('click', function () {
-            document.getElementById('accuracy').innerText = nest.radius;
-            document.getElementById('timestamp').innerText = nest.timestamp;
-            document.getElementById('status').innerText = nest.isDestroyed === 1 ? "Destroyed" : "Active";
+            // Click event to show nest details
+            circle.on('click', function () {
+                document.getElementById('accuracy').innerText = nest.radius;
+                document.getElementById('timestamp').innerText = nest.timestamp;
+                document.getElementById('status').innerText = nest.isDestroyed === 1 ? "Destroyed" : "Active";
 
-            // Hide the default message and show actual info
-            document.getElementById('default-message').style.display = 'none';
-            document.getElementById('accuracy-label').classList.remove('hidden');
-            document.getElementById('timestamp-label').classList.remove('hidden');
-            document.getElementById('status-label').classList.remove('hidden');
-        });
-    });
+                // Hide the default message and show actual info
+                document.getElementById('default-message').style.display = 'none';
+                document.getElementById('accuracy-label').classList.remove('hidden');
+                document.getElementById('timestamp-label').classList.remove('hidden');
+                document.getElementById('status-label').classList.remove('hidden');
 
-
-
-    function searchCity() {
-        var cityName = document.getElementById('city-search').value;
-        if (!cityName) {
-            Swal.fire({
-                position: "top-end",
-                icon: 'warning',
-                title: 'Oops...',
-                toast: true,
-                text: 'Please enter a city name!',
-                showConfirmButton: false,
-                timer: 2500,
-                background: '#FFA500',  // Orange background color
+                map.setView([nest.lat, nest.lng], 18);
             });
-            return;
-        }
+        });
 
-        // Use Nominatim API to get coordinates for the city in Belgium only
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=BE&q=${cityName}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.length > 0) {
-                    var cityCoords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        function searchCity() {
+            var cityName = document.getElementById('city-search').value;
+            if (!cityName) {
+                Swal.fire({
+                    position: "top-end",
+                    icon: 'warning',
+                    title: 'Oops...',
+                    toast: true,
+                    text: 'Please enter a city name!',
+                    showConfirmButton: false,
+                    timer: 2500,
+                    background: '#FFA500',
+                });
+                return;
+            }
 
-                    let nearestNest = null;
-                    let minDistance = Number.MAX_VALUE;
+            // Use Nominatim API to get coordinates for the city in Belgium only
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=BE&q=${cityName}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        var cityCoords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
 
-                    // Filter out destroyed nests and find the nearest active nest
-                    var activeNests = nestEstimates.filter(nest => nest.isDestroyed === 0);
+                        let nearestNest = null;
+                        let minDistance = Number.MAX_VALUE;
 
-                    activeNests.forEach(nest => {
-                        var distance = getDistanceFromLatLonInKm(nest.lat, nest.lng, cityCoords[0], cityCoords[1]);
-                        if (distance <= 5 && distance < minDistance) {
-                            minDistance = distance;
-                            nearestNest = nest;
-                        }
-                    });
+                        // Filter out destroyed nests and find the nearest active nest
+                        var activeNests = nestEstimates.filter(nest => nest.isDestroyed === 0);
 
-                    if (nearestNest) {
-                        // Smooth zooming and panning to the nest location
-                        map.flyTo([nearestNest.lat, nearestNest.lng], 18, {
-                            animate: true,
-                            duration: 1.5,
-                            easeLinearity: 0.25
+                        activeNests.forEach(nest => {
+                            var distance = getDistanceFromLatLonInKm(nest.lat, nest.lng, cityCoords[0], cityCoords[1]);
+                            if (distance <= 5 && distance < minDistance) {
+                                minDistance = distance;
+                                nearestNest = nest;
+                            }
                         });
 
-                        // Add a slight delay and adjust the centering using panBy
-                        setTimeout(() => {
-                            // Offset values (X: move right, Y: move down)
-                            map.panBy([150, 0], {
+                        if (nearestNest) {
+                            // Smooth zooming and centering to the nest location
+                            map.flyTo([nearestNest.lat, nearestNest.lng], 18, {
                                 animate: true,
-                                duration: 1.2
+                                duration: 2.5,
+                                easeLinearity: 0.25
                             });
 
-                            L.popup({
-                                offset: [0, -20]  // Adjust the popup so it's better positioned on the screen
-                            })
-                                .setLatLng([nearestNest.lat, nearestNest.lng])
-                                .setContent(`Active Hornet Nest Detected! Accuracy: ${nearestNest.radius}m`)
-                                .openOn(map);
-                        }, 1500);
+                            setTimeout(() => {
+                                L.popup({
+                                    offset: [0, -20]
+                                })
+                                    .setLatLng([nearestNest.lat, nearestNest.lng])
+                                    .setContent(`Active Hornet Nest Detected! Accuracy: ${nearestNest.radius}m`)
+                                    .openOn(map);
+                            }, 1500);
 
-                        Swal.fire({
-                            position: "top-end",
-                            icon: 'success',
-                            title: 'Nest Found!',
-                            text: `An active hornet nest was detected near ${cityName}. Zooming in...`,
-                            toast: true,
-                            timer: 2500,
-                            showConfirmButton: false,
-                            background: '#28a745',
-                        });
+                            Swal.fire({
+                                position: "top-end",
+                                icon: 'success',
+                                title: 'Nest Found!',
+                                text: `An active hornet nest was detected near ${cityName}. Zooming in...`,
+                                toast: true,
+                                timer: 2500,
+                                showConfirmButton: false,
+                                background: '#28a745',
+                            });
 
+                        } else {
+                            Swal.fire({
+                                position: "top-end",
+                                icon: 'info',
+                                title: 'No Nests Found',
+                                text: `No active hornet nests found near ${cityName}.`,
+                                toast: true,
+                                timer: 2500,
+                                showConfirmButton: false,
+                                background: '#17a2b8',
+                            });
+                        }
                     } else {
                         Swal.fire({
                             position: "top-end",
-                            icon: 'info',
-                            title: 'No Nests Found',
-                            text: `No active hornet nests found near ${cityName}.`,
+                            icon: 'error',
+                            title: 'City Not Found',
+                            text: 'Please enter a valid city in Belgium.',
                             toast: true,
                             timer: 2500,
                             showConfirmButton: false,
-                            background: '#17a2b8',
+                            background: '#fd7e14',
                         });
                     }
-                } else {
+                })
+                .catch(error => {
+                    console.error("Error fetching city coordinates:", error);
                     Swal.fire({
                         position: "top-end",
                         icon: 'error',
-                        title: 'City Not Found',
-                        text: 'Please enter a valid city in Belgium.',
+                        title: 'Error',
+                        text: 'An error occurred while fetching city data. Please try again.',
                         toast: true,
                         timer: 2500,
                         showConfirmButton: false,
-                        background: '#fd7e14',  // Orange for warnings/errors
+                        background: '#dc3545',
                     });
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching city coordinates:", error);
-                Swal.fire({
-                    position: "top-end",
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An error occurred while fetching city data. Please try again.',
-                    toast: true,
-                    timer: 2500,
-                    showConfirmButton: false,
-                    background: '#dc3545',  // Red for critical errors
                 });
-            });
-    }
+        }
 
+        // Function to calculate distance between two points
+        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+            var R = 6371; // Radius of the Earth in km
+            var dLat = deg2rad(lat2 - lat1);
+            var dLon = deg2rad(lon2 - lon1);
+            var a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            var d = R * c;
+            return d;
+        }
 
-
-
-    // Function to calculate distance between two points
-    function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-        var R = 6371; // Radius of the Earth in km
-        var dLat = deg2rad(lat2 - lat1);
-        var dLon = deg2rad(lon2 - lon1);
-        var a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        var d = R * c;
-        return d;
-    }
-
-    function deg2rad(deg) {
-        return deg * (Math.PI / 180);
-    }
-</script>
+        function deg2rad(deg) {
+            return deg * (Math.PI / 180);
+        }
+    </script>
 }
+

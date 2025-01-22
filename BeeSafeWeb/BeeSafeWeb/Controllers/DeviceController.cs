@@ -20,7 +20,7 @@ public class DeviceController : Controller
     }
 
     [HttpPost("Register")]
-    public IActionResult Register(RegisterRequest request)
+    public async Task<IActionResult> Register(RegisterRequest request)
     {
         Device device = new()
         {
@@ -30,29 +30,19 @@ public class DeviceController : Controller
             IsApproved = false,
         };
 
-        _deviceRepository.Add(device);
+        await _deviceRepository.AddAsync(device);
 
-        RegisterResponse response = new ()
-        {
-            Id = device.Id,
-        };
-
-        return Ok(response);
+        return Ok(new { Id = device.Id });
     }
 
-    private ActionResult MessageIsValid(RequestMessage message)
+    private async Task<ActionResult> MessageIsValid(RequestMessage message)
     {
-        Device? device;
-        Guid guid;
-
-        if (String.IsNullOrEmpty(message.Device) || !Guid.TryParse(message.Device, out guid))
+        if (string.IsNullOrEmpty(message.Device) || !Guid.TryParse(message.Device, out var guid))
         {
             return Unauthorized();
         }
 
-        device = _deviceRepository.GetById(guid);
-
-        /* device must be in the system */
+        var device = await Task.Run(() => _deviceRepository.GetByIdAsync(guid));
         if (device == null)
         {
             return Unauthorized();
@@ -67,85 +57,58 @@ public class DeviceController : Controller
     }
 
     [HttpPost("Ping")]
-    public IActionResult Ping(RequestMessage requestMessage)
+    public async Task<IActionResult> Ping(RequestMessage requestMessage)
     {
-        Device device;
-        var result = MessageIsValid(requestMessage);
+        var result = await MessageIsValid(requestMessage);
 
-        if (result is not OkObjectResult)
+        if (result is not OkObjectResult okResult)
         {
             return result;
         }
 
-        if (requestMessage.MessageType != MessageType.Ping)
-        {
-            return BadRequest();
-        }
-
-        /* update the last active state */
-        device = (result as OkObjectResult).Value as Device;
+        var device = (Device)okResult.Value;
         device.LastActive = DateTime.Now;
-        _deviceRepository.Update(device);
+        await _deviceRepository.UpdateAsync(device);
 
-        var response = new ResponseMessage()
-        {
-            MessageType = MessageType.Pong
-        };
-
-        return Ok(response);
+        return Ok(new ResponseMessage { MessageType = MessageType.Pong });
     }
 
     [HttpPost("DetectionEvent")]
-    public IActionResult DetectionEvent(RequestMessage requestMessage)
+    public async Task<IActionResult> DetectionEvent(RequestMessage requestMessage)
     {
-        Device device;
-        float hornetDirection;
-        Guid guid;
-        int timestamp;
-        var result = MessageIsValid(requestMessage);
+        var result = await MessageIsValid(requestMessage);
 
-        if (result is not OkObjectResult)
+        if (result is not OkObjectResult okResult)
         {
             return result;
         }
 
-        /* At this point, we can parse the guid successfully. If this fails,
-         * IDK anymore
-         */
-        Guid.TryParse(requestMessage.Device, out guid);
-        device = _deviceRepository.GetById(guid)!;
+        var device = (Device)okResult.Value;
 
-        if (requestMessage.MessageType != MessageType.DetectionEvent
-            || requestMessage.Data is null)
+        if (requestMessage.MessageType != MessageType.DetectionEvent || requestMessage.Data is null)
         {
             return BadRequest();
         }
-
-        JsonElement data = requestMessage.Data;
 
         try
         {
-            timestamp = data.GetProperty("timestamp").GetInt32();
-            hornetDirection = data.GetProperty("hornet_direction").GetSingle();
-        }
-        catch (KeyNotFoundException)
-        {
-            return BadRequest(
-                "\"data\" attribute is missing either timestamp or hornet_direction.");
-        }
-        catch (InvalidOperationException)
-        {
-            return BadRequest();
-        }
+            var data = requestMessage.Data;
+            int timestamp = data.GetProperty("timestamp").GetInt32();
+            float hornetDirection = data.GetProperty("hornet_direction").GetSingle();
 
-        DetectionEvent detectionEvent = new()
-        {
-            Timestamp = DateTimeOffset.FromUnixTimeSeconds(timestamp).DateTime,
-            HornetDirection = hornetDirection,
-            Device = device
-        };
+            DetectionEvent detectionEvent = new()
+            {
+                Timestamp = DateTimeOffset.FromUnixTimeSeconds(timestamp).DateTime,
+                HornetDirection = hornetDirection,
+                Device = device
+            };
 
-        _detectionRepository.Add(detectionEvent);
+            await  _detectionRepository.AddAsync(detectionEvent);
+        }
+        catch (Exception)
+        {
+            return BadRequest("Invalid data format.");
+        }
 
         return Ok();
     }

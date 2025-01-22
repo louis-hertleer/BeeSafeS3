@@ -1,23 +1,21 @@
 using BeeSafeWeb.Data;
+using BeeSafeWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BeeSafeWeb.Controllers;
 
 public class VisitorController : Controller
 {
-    private readonly BeeSafeContext _context;
+    private readonly IRepository<NestEstimate> _nestRepository;
 
-    public VisitorController(BeeSafeContext context)
+    public VisitorController(IRepository<NestEstimate> nestRepository)
     {
-        _context = context;
+        _nestRepository = nestRepository;
     }
-    
 
-    // GET
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        // Retrieve all nest estimates from the database
-        var nestEstimates = _context.NestEstimates
+        var nestEstimates = (await _nestRepository.GetAllAsync())
             .Select(n => new
             {
                 n.EstimatedLatitude,
@@ -25,12 +23,11 @@ public class VisitorController : Controller
                 n.AccuracyLevel,
                 n.Timestamp,
                 n.IsDestroyed
-            })
-            .ToList();
+            }).ToList();
 
-        // Pass data to the view
         ViewData["NestEstimates"] = nestEstimates;
 
         return View();
     }
+
 }

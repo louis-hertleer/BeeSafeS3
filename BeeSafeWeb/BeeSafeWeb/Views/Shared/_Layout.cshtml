@@ -10,17 +10,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        #map {
-            width: 80vw;
-            height: 65vh;
-        }
-    </style>
+ 
 </head>
 <body class="dark:bg-gray-900 dark:text-white bg-gray-100 text-gray-900 transition-all duration-300">
 @if (ViewData["Title"] as string != "Log in")
 {
-<nav class="bg-slate-600 dark:bg-gray-800 dark:border-b dark:border-gray-700 text-white p-4 flex items-center shadow-md sticky top-0 z-90">
+<nav class="bg-slate-600 dark:bg-gray-800 dark:border-b dark:border-gray-700 text-white p-4 flex items-center shadow-md sticky top-0 z-50">
     <!-- Left Side: Title -->
     <p class="text-xl font-bold flex-1">
         <a asp-controller="Home" asp-action="Index">'t Geels Bieke</a>
@@ -34,7 +29,7 @@
     </button>
 
     <!-- Navigation Links (Hidden on Small Screens) -->
-    <div id="navLinks" class="hidden absolute top-16 left-0 w-full bg-slate-700 md:static md:flex md:flex-row md:space-x-4 md:bg-transparent shadow-lg rounded-b-lg md:rounded-none border-t border-gray-600 md:border-none transition-all duration-300 ease-in-out md:w-auto">
+    <div id="navLinks" class="hidden absolute top-16 left-0 w-full bg-slate-700 md:static md:flex md:flex-row md:space-x-4 md:bg-transparent rounded-b-lg md:rounded-none border-t border-gray-600 md:border-none transition-all duration-300 ease-in-out md:w-auto">
         <div class="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center">
             @if (User.Identity.IsAuthenticated)
             {
