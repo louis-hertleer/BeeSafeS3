@@ -1,5 +1,5 @@
 using BeeSafeWeb.Data;
-using BeeSafeWeb.Models;
+using BeeSafeWeb.Utility.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BeeSafeWeb.Controllers;

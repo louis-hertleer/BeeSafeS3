@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace BeeSafeWeb.Models;
+namespace BeeSafeWeb.Utility.Models;
 
 public class NestEstimate
 {

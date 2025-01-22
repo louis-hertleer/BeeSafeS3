@@ -1,7 +1,7 @@
 using System.Text.Json;
 using BeeSafeWeb.Data;
 using BeeSafeWeb.Messages;
-using BeeSafeWeb.Models;
+using BeeSafeWeb.Utility.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BeeSafeWeb.Controllers;

@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using BeeSafeWeb.Models;
+using BeeSafeWeb.Utility.Models;
 
 namespace BeeSafeWeb.Data;
 

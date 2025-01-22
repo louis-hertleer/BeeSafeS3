@@ -1,4 +1,4 @@
-using BeeSafeWeb.Models;
+using BeeSafeWeb.Utility.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using BeeSafeWeb.Data;
