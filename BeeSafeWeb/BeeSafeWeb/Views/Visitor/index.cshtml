@@ -45,37 +45,41 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic>;
 <!-- Map and Info Section -->
 <div class="container mx-auto mt-10 dark:bg-gray-900">
     <div class="flex justify-left mb-6">
-        <h1 class="text-5xl font-bold text-gray-800 dark:text-yellow-400">Search Nest Locations:</h1>
+        <h1 class="text-5xl font-bold text-gray-800 dark:text-yellow-400">Search Hornet Nest Locations:</h1>
     </div>
 
-    <div class="flex flex-wrap lg:flex-nowrap items-center gap-8 p-12 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-lg">
+    <div class="flex flex-col lg:flex-row items-start gap-8 p-12 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-lg">
 
-        <!-- Leaflet Map -->
-        <div class="w-full max-w-2xl border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden shadow-md">
-            <div id="map" class="w-full h-[50vh] dark:bg-gray-700"></div>
+        <!-- Leaflet Map - Appears below on small screens, left on large screens -->
+        <div class="w-full lg:w-2/3 border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden shadow-md order-2 lg:order-1">
+            <div id="map" class="w-full h-[60vh] dark:bg-gray-700"></div>
         </div>
 
-        <!-- Information Box with Search Bar -->
-        <div class="w-full max-w-md bg-white dark:bg-gray-700 dark:text-white p-6 rounded-lg shadow-lg border border-gray-300 dark:border-gray-600">
-            <h3 class="text-2xl font-bold text-gray-800 dark:text-yellow-400 mb-4">Nest Info</h3>
+        <!-- Information Box with Search Bar (Appears first on small screens, right on large screens) -->
+        <div class="w-full lg:w-1/3 flex flex-col gap-6 order-1 lg:order-2">
 
-            <!-- Search Bar inside the box -->
-            <div class="flex w-full mb-6">
-                <input id="city-search" type="text" placeholder="Enter city name"
-                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm 
-                              focus:outline-none focus:ring-2 focus:ring-yellow-500 
-                              dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400">
-                <button onclick="searchCity()"
-                        class="ml-4 bg-yellow-500 px-6 py-3 rounded-md text-lg font-semibold shadow-md 
-                               hover:bg-yellow-600 dark:bg-yellow-400 dark:text-gray-900">
-                    Search
-                </button>
+            <div class="bg-white dark:bg-gray-700 dark:text-white p-6 rounded-lg shadow-lg border border-gray-300 dark:border-gray-600">
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-yellow-400 mb-4">Nest Info</h3>
+
+                <!-- Search Bar inside the box -->
+                <div class="flex w-full mb-6">
+                    <input id="city-search" type="text" placeholder="Enter city name"
+                           class="w-full p-3 border border-gray-300 rounded-lg shadow-sm 
+                                  focus:outline-none focus:ring-2 focus:ring-yellow-500 
+                                  dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400">
+                    <button onclick="searchCity()"
+                            class="ml-4 bg-yellow-500 px-6 py-3 rounded-md text-lg font-semibold shadow-md 
+                                   hover:bg-yellow-600 dark:bg-yellow-400 dark:text-gray-900">
+                        Search
+                    </button>
+                </div>
+
+                <p id="default-message" class="text-gray-600 dark:text-gray-300 mt-2">Select a circle to see more information.</p>
+                <p id="accuracy-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Accuracy Radius: <b id="accuracy"></b> meters</p>
+                <p id="timestamp-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Last Updated: <b id="timestamp"></b></p>
+                <p id="status-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Status: <b id="status"></b></p>
             </div>
 
-            <p id="default-message" class="text-gray-600 dark:text-gray-300 mt-2">Select a circle to see more information.</p>
-            <p id="accuracy-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Accuracy Radius: <b id="accuracy"></b> meters</p>
-            <p id="timestamp-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Last Updated: <b id="timestamp"></b></p>
-            <p id="status-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Status: <b id="status"></b></p>
         </div>
 
     </div>
