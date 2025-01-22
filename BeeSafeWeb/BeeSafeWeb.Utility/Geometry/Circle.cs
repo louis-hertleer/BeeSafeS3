@@ -1,4 +1,4 @@
-namespace BeeSafeWeb.Utility;
+namespace BeeSafeWeb.Utility.Geometry;
 
 public class Circle
 {

@@ -1,4 +1,4 @@
-using BeeSafeWeb.Models;
+using BeeSafeWeb.Utility.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BeeSafeWeb.Tests;

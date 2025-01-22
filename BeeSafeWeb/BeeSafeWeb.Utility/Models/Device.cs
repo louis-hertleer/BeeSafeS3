@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace BeeSafeWeb.Models;
+namespace BeeSafeWeb.Utility.Models;
 
 /// <summary>
 /// A device that detects hornets.

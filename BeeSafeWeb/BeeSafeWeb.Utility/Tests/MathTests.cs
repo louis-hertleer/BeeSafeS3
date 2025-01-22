@@ -1,5 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using BeeSafeWeb.Utility;
+using BeeSafeWeb.Utility.Geometry;
 
 namespace BeeSafeWeb.Tests;
 

@@ -8,6 +8,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["BeeSafeWeb/BeeSafeWeb.csproj", "BeeSafeWeb/"]
+COPY ["BeeSafeWeb.Utility/BeeSafeWeb.Utility.csproj", "BeeSafeWeb.Utility/"]
 COPY package.json .
 COPY package-lock.json .
 COPY tailwind.config.js .

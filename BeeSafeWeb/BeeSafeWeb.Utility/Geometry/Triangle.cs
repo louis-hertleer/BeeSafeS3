@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace BeeSafeWeb.Utility;
+namespace BeeSafeWeb.Utility.Geometry;
 
 public class Triangle
 {

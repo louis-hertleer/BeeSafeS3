@@ -1,4 +1,4 @@
-﻿namespace BeeSafeWeb.Models;
+﻿namespace BeeSafeWeb.Utility.Models;
 
 public class LoginViewModel
 {

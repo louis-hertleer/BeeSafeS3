@@ -1,0 +1,5 @@
+obj/
+bin/
+node_modules/
+appsettings.Development.json
+wwwroot/css/output.css

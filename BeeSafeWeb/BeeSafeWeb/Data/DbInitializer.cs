@@ -1,4 +1,4 @@
-﻿using BeeSafeWeb.Models;
+﻿using BeeSafeWeb.Utility.Models;
 using System;
 using System.Collections.Generic;
 
