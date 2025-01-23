@@ -1,0 +1,47 @@
+name: DAST ZAP
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  zap_scan:
+    runs-on: ubuntu-latest
+    steps:
+      # Wait for 2 minutes
+      - name: Wait for 2 minutes
+        run: sleep 120
+
+      # Check if the application is responding
+      - name: Check Application Health
+        run: |
+          for i in {1..10}; do
+            if curl -sSf ${{ secrets.APPLICATION_URL }} >/dev/null; then
+              echo "Application is responding!"
+              exit 0
+            fi
+            echo "Waiting for the application to respond... (attempt $i)"
+            sleep 10
+          done
+          echo "Application is not responding. Failing the workflow."
+          exit 1
+
+      # Get the current date (exclude time)
+      - name: Set Date
+        id: datetime
+        run: |
+          DATE=$(date '+%Y-%m-%d')
+          echo "DATETIME=$DATE" >> $GITHUB_ENV
+
+      # Run ZAP Baseline Scan
+      - name: Run ZAP Full Scan
+        uses: zaproxy/action-full-scan@v0.12.0
+        with:
+          target: ${{ secrets.APPLICATION_URL }}
+          cmd_options: '-t ${{ secrets.APPLICATION_URL }} '
+          issue_title: "ZAP Report - ${{ env.DATETIME }}"

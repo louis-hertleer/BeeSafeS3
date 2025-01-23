@@ -113,15 +113,18 @@ jobs:
               --target-port 8080 \
               --env-vars ConnectionStrings__DefaultConnection="Server=tcp:dbbeesafe.database.windows.net,1433;Initial Catalog=beesafe;Persist Security Info=False;User ID=${{ secrets.MYSQL_USER }};Password=${{ secrets.MYSQL_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" \
               --ingress external \
-              --environment caebeesafe \
-              --scale-min 1
+              --environment caebeesafe 
 
-      - name: Get Domain Name
+      - name: Get Domain Name and Save to ENV
+        id: get-fqdn
         run: |
-              echo "Container App Public URL:"
-              az containerapp show \
-                --name beesafe-app-container \
-                --resource-group BeeSafe \
-                --query "properties.configuration.ingress.fqdn" \
-                --output tsv
-      
+          # Get the FQDN of the deployed container app
+          fqdn=$(az containerapp show \
+            --name beesafe-app-container \
+            --resource-group BeeSafe \
+            --query "properties.configuration.ingress.fqdn" \
+            --output tsv)
+          
+          # Output the FQDN for other steps
+          echo "APPLICATION_URL=https://$fqdn" >> $GITHUB_ENV
+          echo "Container App Public URL: https://$fqdn"
