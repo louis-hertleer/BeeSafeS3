@@ -1,0 +1,93 @@
+@model IEnumerable<dynamic>
+
+@{ 
+    Layout = "_Layout";
+    IEnumerable<dynamic> detections = Model;
+    var devices = (IEnumerable<dynamic>) ViewData["Devices"];
+    ViewData["Title"] = "Manage detection events";
+}
+
+<div>
+    <h1>Click on a device on the map to filter by device.</h1>
+    <a asp-action="Index">
+        <button class="bg-yellow-600 border p-4 my-2 border-yellow-200 rounded">
+            View all
+        </button>
+    </a>
+    <div style="width: 500px; height:  500px" id="map"></div>
+    <table class="w-full border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-300 shadow-lg mt-6 text-sm md:text-base">
+        <thead class="bg-gray-300 dark:bg-gray-700">
+        <tr>
+            <th class="p-2 md:p-3">Timestamp</th>
+            <th class="p-2 md:p-3">Direction</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var detection in detections)
+        {
+            <tr class="border-t border-gray-200 text-center dark:border-gray-600">
+                <td class="p-2 md:p-3">@detection.Timestamp</td>
+                <td class="p-2 md:p-3">@detection.HornetDirection°</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts
+{ 
+    <script>
+        let position = [[51.168300, 4.980980], 14];
+        
+        let sPosition = localStorage.getItem('position');
+        if (sPosition !== undefined)
+        {
+            position = JSON.parse(sPosition);
+        }
+        
+        let map = L.map('map').setView(position[0], position[1]);
+        
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        
+        
+        const devices = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(devices));
+        /* reminder: if the get parameter "device" is set, then this is only
+         * that belong to the selected device.
+         */
+        const detectionEvents = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(detections));
+
+        devices.forEach((device) => {
+            detectionEvents.forEach((detection) => {
+                if (detection.Device.Id !== device.Id)
+                    return;
+                
+                let rads = (detection.HornetDirection + device.Direction) * (Math.PI / 180);
+                console.log(rads);
+                
+                const numberOfDegreesIn1KM = 1/111;
+                
+                let line = [
+                    [device.Latitude, device.Longitude],
+                    [device.Latitude + Math.cos(rads) * numberOfDegreesIn1KM, device.Longitude + Math.sin(rads) * numberOfDegreesIn1KM]
+                ]
+
+                const polyline = L.polyline(line, {
+                    color: 'blue',    // Line color
+                    weight: 4,        // Line thickness
+                    opacity: 0.7      // Line transparency
+                }).addTo(map);
+            });
+            const marker = L.marker([device.Latitude, device.Longitude])
+                .addTo(map)
+                .bindPopup(`Device ${device.Id}`);
+            marker.on('click', () => {
+                let sOutPosition = JSON.stringify([map.getCenter(), map.getZoom()])
+                localStorage.setItem('position', sOutPosition);
+                window.location = `/Detection?device=${device.Id}`;
+            });
+        });
+    </script>
+}
