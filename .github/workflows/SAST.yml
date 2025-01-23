@@ -1,41 +1,55 @@
 name: "SAST CodeQL"
 
 on:
-  push:
-    branches: 
-      - main
+ push:
+   branches: 
+     - main
 jobs:
-  analyze:
-    name: Analyze (${{ matrix.language }})
-    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
-    permissions:
-      security-events: write
-      packages: read
-      actions: read
-      contents: read
+ analyze:
+   name: Analyze (${{ matrix.language }})
+   runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+   permissions:
+     security-events: write
+     packages: read
+     actions: read
+     contents: read
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-        - language: csharp
-          build-mode: autobuild
-        - language: javascript-typescript
-          build-mode: none
-        - language: python
-          build-mode: none
-        - language: actions
-          build-mode: none
+   strategy:
+     fail-fast: false
+     matrix:
+       include:
+       - language: csharp
+         build-mode: manual
+       - language: javascript-typescript
+         build-mode: none
+       - language: python
+         build-mode: none
+       - language: actions
+         build-mode: none
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+   steps:
+   - name: Checkout repository
+     uses: actions/checkout@v4
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ matrix.language }}
-        build-mode: ${{ matrix.build-mode }}
+   - name: Initialize CodeQL
+     uses: github/codeql-action/init@v3
+     with:
+       languages: ${{ matrix.language }}
+       build-mode: ${{ matrix.build-mode }}
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+   - name: Setup Node.js
+     if: matrix.language == 'csharp'
+     uses: actions/setup-node@v4
+     with:
+       node-version: '20'
+
+   - name: Build C# Project
+     if: matrix.language == 'csharp'
+     run: |
+       cd BeeSafeWeb
+       npm install
+       dotnet restore BeeSafeWeb/BeeSafeWeb.csproj
+       dotnet build BeeSafeWeb/BeeSafeWeb.csproj -c Release
+
+   - name: Perform CodeQL Analysis
+     uses: github/codeql-action/analyze@v3
