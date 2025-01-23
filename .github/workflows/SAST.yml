@@ -1,4 +1,4 @@
-name: "CodeQL Advanced"
+name: "SAST CodeQL"
 
 on:
   push:
