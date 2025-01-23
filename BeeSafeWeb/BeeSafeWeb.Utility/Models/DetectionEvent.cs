@@ -2,6 +2,7 @@ namespace BeeSafeWeb.Utility.Models;
 
 public class DetectionEvent
 {
+    
     public Guid Id { get; set; }
     public DateTime Timestamp { get; set; }
     /// <summary>

@@ -51,8 +51,8 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic>;
     <div class="flex flex-col lg:flex-row items-start gap-8 p-12 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-lg">
 
         <!-- Leaflet Map - Appears below on small screens, left on large screens -->
-        <div class="w-full lg:w-2/3 border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden shadow-md order-2 lg:order-1">
-            <div id="map" class="w-full h-[60vh] dark:bg-gray-700"></div>
+        <div class="w-full lg:w-2/3 border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden shadow-md order-2 lg:order-1 z-0">
+            <div id="map" class="w-full h-[60vh] dark:bg-gray-700 z-0"></div>
         </div>
 
         <!-- Information Box with Search Bar (Appears first on small screens, right on large screens) -->
