@@ -1,4 +1,4 @@
-using BeeSafeWeb.Service;
+using BeeSafeWeb.Services;
 using BeeSafeWeb.Areas.Identity.Pages.Account;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

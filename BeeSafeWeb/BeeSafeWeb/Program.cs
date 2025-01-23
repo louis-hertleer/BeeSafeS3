@@ -1,5 +1,5 @@
 using BeeSafeWeb.Data;
-using BeeSafeWeb.Service;
+using BeeSafeWeb.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
