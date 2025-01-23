@@ -22,6 +22,7 @@ namespace BeeSafeWeb.Data
                 new Device
                 {
                     Id = Guid.NewGuid(),
+                    //Name = "Device A",
                     Latitude = 51.168100,
                     Longitude = 4.980800,
                     IsApproved = true,
@@ -33,14 +34,35 @@ namespace BeeSafeWeb.Data
                 new Device
                 {
                     Id = Guid.NewGuid(),
+                    //Name = "Device B",
                     Latitude = 51.168100,
-                    Longitude = 4.980980,
+                    Longitude = 4.980720,
                     IsApproved = true,
                     IsTracking = false,
                     Direction = 90.0,
                     DetectionEvents = new List<DetectionEvent>(),
                     LastActive = DateTime.Now
-                }
+                },
+                new Device
+                {
+                    Id = Guid.NewGuid(),
+                    IsApproved = false,
+                    IsTracking = true,
+                    DetectionEvents = new List<DetectionEvent>(),
+                    LastActive = DateTime.Now
+                },
+                new Device
+                {
+                    Id = Guid.NewGuid(),
+                    Latitude = 51.168100,
+                    Longitude = 4.980980,
+                    IsApproved = false,
+                    IsTracking = true,
+                    DetectionEvents = new List<DetectionEvent>(),
+                    LastActive = DateTime.Now
+                  },
+                
+                
             };
 
             context.Devices.AddRange(devices);

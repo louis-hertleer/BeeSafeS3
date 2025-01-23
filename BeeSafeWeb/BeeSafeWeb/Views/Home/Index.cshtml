@@ -12,8 +12,8 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
     <div class="flex flex-wrap lg:flex-nowrap items-start gap-8 p-12 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-lg">
 
         <!-- Leaflet Map - Slightly Reduced Width -->
-        <div class="w-full lg:w-2/3 border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden shadow-md">
-            <div id="map" class="w-full h-[60vh] dark:bg-gray-700"></div>
+        <div class="w-full lg:w-2/3 border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden shadow-md z-0">
+            <div id="map" class="w-full h-[60vh] dark:bg-gray-700 z-0"></div>
         </div>
 
         <!-- Information Section (More Space) -->
@@ -53,8 +53,13 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
                 <h3 class="text-2xl font-bold flex items-center dark:text-yellow-400">
                     <span class="mr-2">🔍</span> Device Info
                 </h3>
-                <p class="text-gray-600 dark:text-gray-300 mt-4">Click on a device marker to see details.</p>
+                <p id="device-message" class="text-gray-600 dark:text-gray-300 mt-4">Click on a device marker to see details.</p>
+                <p id="device-status-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Status: <b id="device-status"></b></p>
+                <p id="device-mode-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Current mode: <b id="device-mode"></b></p>
+                <p id="device-last-active-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Last active: <b id="device-last-active"></b></p>
             </div>
+
+
 
         </div>
 
@@ -108,13 +113,17 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
                 deviceBounds.push([device.lat, device.lng]);
 
                 deviceMarker.on('click', function () {
-                    document.querySelector('.device-info').innerHTML = `
-                        <h3 class="text-xl font-bold text-gray-800 dark:text-white">Device Info</h3>
-                        <p class="text-gray-600 dark:text-gray-300 mt-2">Status: ${device.isOnline === "true" ? 'Online' : 'Offline'}</p>
-                        <p class="text-gray-600 dark:text-gray-300 mt-2">Current mode: <b>${device.isTracking === "true" ? 'Tracking' : 'Defence'}</b></p>
-                        <p class="text-gray-600 dark:text-gray-300 mt-2">Last active: <b>${device.lastActive}</b></p>
-                    `;
+                    document.getElementById('device-status').innerText = device.isOnline === "true" ? 'Online' : 'Offline';
+                    document.getElementById('device-mode').innerText = device.isTracking === "true" ? 'Tracking' : 'Defence';
+                    document.getElementById('device-last-active').innerText = device.lastActive;
+
+                    // Hide default message and show device info labels
+                    document.getElementById('device-message').style.display = 'none';
+                    document.getElementById('device-status-label').classList.remove('hidden');
+                    document.getElementById('device-mode-label').classList.remove('hidden');
+                    document.getElementById('device-last-active-label').classList.remove('hidden');
                 });
+
             }
         });
 
