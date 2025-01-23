@@ -2,70 +2,86 @@ using BeeSafeWeb.Data;
 using BeeSafeWeb.Utility.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
-namespace BeeSafeWeb.Controllers;
-
-[Authorize]
-public class ApprovalsController : Controller
+namespace BeeSafeWeb.Controllers
 {
-    private readonly IRepository<Device> _deviceRepository;
-
-    public ApprovalsController(IRepository<Device> deviceRepository)
+    [Authorize]
+    public class ApprovalsController : Controller
     {
-        _deviceRepository = deviceRepository;
-    }
+        private readonly IRepository<Device> _deviceRepository;
 
-    public async Task<IActionResult> Index()
-    {
-        var devices = await Task.Run(() => _deviceRepository.GetQueryable()
-            .Where(d => !d.IsApproved && !d.IsDeclined)
-            .ToList());
-
-        return View(devices);
-    }
-
-   [HttpPost("ApproveDevice")]
-   public async Task<IActionResult> ApproveDevice(Guid id, string latitude, string longitude, string direction)
-   {
-       if (!double.TryParse(latitude, System.Globalization.CultureInfo.InvariantCulture, out double lat) ||
-           !double.TryParse(longitude, System.Globalization.CultureInfo.InvariantCulture, out double lon) ||
-           !double.TryParse(direction, System.Globalization.CultureInfo.InvariantCulture, out double dir))
-       {
-           return BadRequest("Invalid latitude, longitude, or direction format.");
-       }
-   
-       var device = await _deviceRepository.GetByIdAsync(id);
-       if (device == null)
-       {
-           return NotFound();
-       }
-   
-       device.Latitude = lat;
-       device.Longitude = lon;
-       device.Direction = dir;
-       device.IsApproved = true;
-       device.LastActive = DateTime.Now;
-   
-       await _deviceRepository.UpdateAsync(device);
-       return RedirectToAction("Index", "Approvals");
-   }
-
-
-
-    [HttpPost("RejectDevice/{id:guid}")]
-    public async Task<IActionResult> RejectDevice(Guid id)
-    {
-        var device = await _deviceRepository.GetByIdAsync(id);
-        if (device == null)
+        public ApprovalsController(IRepository<Device> deviceRepository)
         {
-            return NotFound();
+            _deviceRepository = deviceRepository;
         }
 
-        device.IsApproved = false;
-        device.IsDeclined = true;
+        public async Task<IActionResult> Index()
+        {
+            var devices = _deviceRepository.GetQueryable()
+                .Where(d => !d.IsApproved && !d.IsDeclined)
+                .OrderBy(d => d.Id)
+                .Select(d => new Device
+                {
+                    Id = d.Id,
+                    Latitude = d.Latitude,
+                    Longitude = d.Longitude,
+                    Direction = d.Direction,
+                    IsApproved = d.IsApproved,
+                    IsDeclined = d.IsDeclined,
+                    LastActive = d.LastActive
+                })
+                .ToList();
 
-        await _deviceRepository.UpdateAsync(device);
+            return View(devices);
+        }
 
-        return RedirectToAction("Index", "Approvals");
+        [HttpPost]
+        public async Task<IActionResult> ApproveDevice(Guid id, [FromForm] DeviceApprovalModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid input data.");
+            }
+
+            var device = await _deviceRepository.GetByIdAsync(id);
+            if (device == null)
+            {
+                return NotFound();
+            }
+
+            device.Latitude = model.Latitude;
+            device.Longitude = model.Longitude;
+            device.Direction = model.Direction;
+            device.IsApproved = true;
+            device.LastActive = DateTime.UtcNow;
+
+            await _deviceRepository.UpdateAsync(device);
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectDevice(Guid id)
+        {
+            var device = await _deviceRepository.GetByIdAsync(id);
+            if (device == null)
+            {
+                return NotFound();
+            }
+
+            device.IsApproved = false;
+            device.IsDeclined = true;
+
+            await _deviceRepository.UpdateAsync(device);
+            return RedirectToAction(nameof(Index));
+        }
+
+        public class DeviceApprovalModel
+        {
+            public Guid Id { get; set; }
+            public double Latitude { get; set; }
+            public double Longitude { get; set; }
+            public double Direction { get; set; }
+        }
     }
 }

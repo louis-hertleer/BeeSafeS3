@@ -4,40 +4,44 @@ List<Device> devices = Model;
 }
 <div class="p-4">
     <div>
-        <h1 class="text-3xl font-bold">Pending Devices</h1>
-        <p>Here you can see the devices that are pending approval. Click "Set Location" to select a location on the map.</p>
+        <h1 class="text-3xl font-bold text-center">Pending Devices</h1>
+        <p class="text-center">Here you can see the devices that are pending approval. Click "Set Location" to select a location on the map.</p>
     </div>
 
     <div class="overflow-x-auto mt-4">
-        <table class="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <thead class="bg-gray-200 dark:bg-gray-700">
+        <table class="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md text-sm sm:text-lg">
+            <thead class="bg-gray-200 dark:bg-gray-700 text-center">
             <tr>
-                <!-- <th class="py-2 px-4 border">Device ID</th> -->
-                <th class="py-2 px-4 border">Last Active</th>
-                <th class="py-2 px-4 border">Latitude</th>
-                <th class="py-2 px-4 border">Longitude</th>
-                <th class="py-2 px-4 border">Direction</th>
-                <th class="py-2 px-4 border">Action</th>
+                <th class="py-3 px-4 border">Last Active</th>
+                <th class="py-3 px-4 border">Latitude</th>
+                <th class="py-3 px-4 border">Longitude</th>
+                <th class="py-3 px-4 border">Direction</th>
+                <th class="py-3 px-4 border">Action</th>
             </tr>
             </thead>
             <tbody>
             @foreach (var device in devices)
             {
             <tr class="text-center border-t">
-              <!--  <td class="py-2 px-4">@device.Id</td> -->
-                <td class="py-2 px-4">@device.LastActive</td>
-                <td class="py-2 px-4">
-                    <input id="latitude-@device.Id" class="border rounded p-2 w-full dark:bg-gray-700" value="@device.Latitude" >
+                <td class="py-3 px-4">@device.LastActive.ToString("d/M/yyyy HH:mm")</td>
+                <td class=" px-4">
+                    <input id="latitude-@device.Id"
+                           class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
+                           value="@device.Latitude">
                 </td>
-                <td class="py-2 px-4">
-                    <input id="longitude-@device.Id" class="border rounded p-2 w-full dark:bg-gray-700" value="@device.Longitude" >
-                </td>  
-                <td class="py-2 px-4">
-                    <input id="direction-@device.Id" class="border rounded p-2 w-full dark:bg-gray-700" value="@device.Direction" >
+                <td class="py-3 px-4">
+                    <input id="longitude-@device.Id"
+                           class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
+                           value="@device.Longitude">
                 </td>
-                <td class="py-2 px-4 text-center">
-                    <div class="flex flex-col lg:flex-row gap-2 justify-center items-center">
-                        <button class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition duration-200 m-2"
+                <td class="py-3 px-4">
+                    <input id="direction-@device.Id"
+                           class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
+                           value="@device.Direction">
+                </td>
+                <td class="py-3 px-4 text-center">
+                    <div class="flex flex-col sm:flex-row gap-2 justify-center items-center">
+                        <button class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition duration-200"
                                 onclick="openModal('@device.Id')">
                             Set Location
                         </button>
@@ -47,19 +51,18 @@ List<Device> devices = Model;
                             <input type="hidden" id="form-latitude-@device.Id" name="latitude">
                             <input type="hidden" id="form-longitude-@device.Id" name="longitude">
                             <input type="hidden" id="form-direction-@device.Id" name="direction">
-                            <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition duration-200 m-2">
+                            <button type="submit" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 transition duration-200">
                                 Approve
                             </button>
                         </form>
 
-                        <form method="post" onsubmit="rejectDevice(event)" asp-action="RejectDevice" asp-controller="Approvals" class="flex">
-                            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition duration-200 m-2">
+                        <form method="post" onsubmit="rejectDevice(event)" asp-action="RejectDevice" asp-controller="Approvals">
+                            <button type="submit" class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600 transition duration-200">
                                 Decline
                             </button>
                         </form>
                     </div>
                 </td>
-
             </tr>
             }
             </tbody>
@@ -68,33 +71,34 @@ List<Device> devices = Model;
 </div>
 
 <!-- Location Modal -->
-<div id="location-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center">
-    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-5xl shadow-lg relative w-full max-w-2xl">
-        <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">Set Device Location</h2>
+<div id="location-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-4xl shadow-lg relative w-full max-w-lg sm:max-w-2xl">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white text-center">Set Device Location</h2>
 
         <!-- Search Bar -->
         <div class="mb-4">
             <input type="text" id="city-search" placeholder="Enter city name in Belgium"
-                   class="w-full p-3 border rounded-md dark:bg-gray-700 dark:text-white"
+                   class="w-full p-4 border rounded-md dark:bg-gray-700 dark:text-white text-lg"
                    onkeypress="handleKeyPress(event)">
-            <button onclick="searchCity()" class="mt-2 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+            <button onclick="searchCity()" class="mt-2 w-full sm:w-auto bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600">
                 Search
             </button>
         </div>
 
         <!-- Map Container -->
-        <div id="map" class="w-full h-[50vh] border rounded-md shadow-md"></div>
+        <div id="map" class="w-full h-[60vh] sm:h-[50vh] border rounded-md shadow-md"></div>
 
-        <div class="mt-4 flex justify-between">
-            <button onclick="confirmLocation()" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+        <div class="mt-6 flex flex-col sm:flex-row gap-2 justify-between">
+            <button onclick="confirmLocation()" class="w-full sm:w-auto bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600">
                 Confirm Location
             </button>
-            <button type="button" onclick="closeModal()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+            <button type="button" onclick="closeModal()" class="w-full sm:w-auto bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600">
                 Cancel
             </button>
         </div>
     </div>
 </div>
+
 
 @section Scripts {
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -104,8 +108,8 @@ List<Device> devices = Model;
     let fovLayer;
     let selectedDeviceId = null;
     let initialPoint = null;
-    const fovAngle = 30;  
-    const fovDistance = 0.0009;
+    const fovAngle = 40;  
+    const fovDistance = 0.0005;
 
     function openModal(deviceId) {
         selectedDeviceId = deviceId;
@@ -171,12 +175,20 @@ List<Device> devices = Model;
 }
 
     function drawCameraFOV(e) {
-        if (initialPoint) {
+        let latlng;
+        if (e.latlng) {
+            latlng = e.latlng;
+        } else if (e.touches && e.touches.length > 0) {
+            const touch = e.touches[0];
+            latlng = map.containerPointToLatLng([touch.clientX, touch.clientY]);
+        }
+
+        if (initialPoint && latlng) {
             if (fovLayer) {
                 map.removeLayer(fovLayer);
             }
 
-            const direction = calculateDirection(initialPoint, e.latlng);
+            const direction = calculateDirection(initialPoint, latlng);
             fovLayer = createFOVPolygon(initialPoint, direction);
             fovLayer.addTo(map);
         }
