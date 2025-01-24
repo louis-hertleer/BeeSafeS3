@@ -149,17 +149,68 @@ namespace BeeSafeWeb.Data
 
 
             // Detection Events
+
             var detectionEvents = new List<DetectionEvent>
             {
                 new DetectionEvent
                 {
                     Id = Guid.NewGuid(),
                     Timestamp = DateTime.Now,
-                    HornetDirection = 50.0,
+                    HornetDirection = 330.0,
                     FirstDetection = DateTime.Now.AddMinutes(-10),
                     SecondDetection = DateTime.Now.AddMinutes(-5),
                     Device = devices[0],
                     KnownHornet = knownHornet
+                },
+                new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = DateTime.Now,
+                    HornetDirection = 260.0,
+                    FirstDetection = DateTime.Now.AddMinutes(-10),
+                    SecondDetection = DateTime.Now.AddMinutes(-5),
+                    Device = devices[1],
+                    KnownHornet = null
+                },
+                new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = DateTime.Now,
+                    HornetDirection = 325.0,
+                    FirstDetection = DateTime.Now.AddMinutes(-10),
+                    SecondDetection = DateTime.Now.AddMinutes(-5),
+                    Device = devices[0],
+                    KnownHornet = null
+                },
+                new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = DateTime.Now,
+                    HornetDirection = 340.0, // Slightly north of 330
+                    FirstDetection = DateTime.Now.AddMinutes(-8),
+                    SecondDetection = DateTime.Now.AddMinutes(-4),
+                    Device = devices[0],
+                    KnownHornet = knownHornet
+                },
+                new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = DateTime.Now,
+                    HornetDirection = 275.0, // Slightly west of 260
+                    FirstDetection = DateTime.Now.AddMinutes(-12),
+                    SecondDetection = DateTime.Now.AddMinutes(-7),
+                    Device = devices[1],
+                    KnownHornet = null
+                },
+                new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = DateTime.Now,
+                    HornetDirection = 315.0, // Further along from 325
+                    FirstDetection = DateTime.Now.AddMinutes(-9),
+                    SecondDetection = DateTime.Now.AddMinutes(-4),
+                    Device = devices[0],
+                    KnownHornet = null
                 }
             };
 

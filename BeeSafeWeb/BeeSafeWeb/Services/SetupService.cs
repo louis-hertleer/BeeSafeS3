@@ -1,6 +1,6 @@
 using BeeSafeWeb.Data;
 
-namespace BeeSafeWeb.Service;
+namespace BeeSafeWeb.Services;
 
 /* This class wraps the functionality of checking if there are no users in the
  * database. The reason for this is that it needs to make a query to check if

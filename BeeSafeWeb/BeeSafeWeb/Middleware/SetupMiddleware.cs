@@ -1,5 +1,5 @@
 using BeeSafeWeb.Data;
-using BeeSafeWeb.Service;
+using BeeSafeWeb.Services;
 
 public class SetupMiddleware
 {

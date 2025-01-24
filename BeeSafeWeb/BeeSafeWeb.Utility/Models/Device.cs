@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using BeeSafeWeb.Utility.Misc;
 
 namespace BeeSafeWeb.Utility.Models;
 
@@ -56,46 +57,7 @@ public class Device
     /// was last updated.
     /// </summary>
     [NotMapped]
-    public string LastActiveString
-    {
-        get
-        {
-            var date = DateTime.Now - LastActive;
-            int number = 0;
-            string unit = "Just now";
-            if (date.Days > 0)
-            {
-                number = date.Days;
-                unit = "day";
-            }
-            else if (date.Hours > 0)
-            {
-                number = date.Hours;
-                unit = "hour";
-            }
-            else if (date.Minutes > 0)
-            {
-                number = date.Minutes;
-                unit = "minute";
-            }
-            else if (date.Seconds > 30)
-            {
-                number = date.Seconds;
-                unit = "second";
-            }
-            else
-            {
-                return unit;
-            }
-
-            if (number != 1)
-            {
-                unit += "s";
-            }
-
-            return $"{number} {unit} ago";
-        }
-    }
+    public string LastActiveString => DateUtility.GetLastActiveString(LastActive);
 
     public List<DetectionEvent> DetectionEvents { get; set; }
 }
