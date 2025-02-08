@@ -1,33 +1,37 @@
 using BeeSafeWeb.Data;
+using BeeSafeWeb.Services;
 using BeeSafeWeb.Utility.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
-namespace BeeSafeWeb.Controllers;
-
-public class VisitorController : Controller
+namespace BeeSafeWeb.Controllers
 {
-    private readonly IRepository<NestEstimate> _nestRepository;
-
-    public VisitorController(IRepository<NestEstimate> nestRepository)
+    public class VisitorController : Controller
     {
-        _nestRepository = nestRepository;
-    }
+        private readonly NestLocationService _nestLocationService;
 
-    public async Task<IActionResult> Index()
-    {
-        var nestEstimates = (await _nestRepository.GetAllAsync())
-            .Select(n => new
+        public VisitorController(NestLocationService nestLocationService)
+        {
+            _nestLocationService = nestLocationService;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var nestEstimates = await _nestLocationService.CalculateNestLocationsAsync();
+
+            // Project the aggregated (display) properties and use "IsDestroyed" (uppercase) for consistency.
+            var nestData = nestEstimates.Select(n => new
             {
-                n.EstimatedLatitude,
-                n.EstimatedLongitude,
-                n.AccuracyLevel,
-                n.Timestamp,
-                n.IsDestroyed
+                lat = n.DisplayLatitude ?? n.EstimatedLatitude,
+                lng = n.DisplayLongitude ?? n.EstimatedLongitude,
+                radius = n.DisplayAccuracy ?? n.AccuracyLevel,
+                timestamp = n.Timestamp,
+                IsDestroyed = n.IsDestroyed
             }).ToList();
 
-        ViewData["NestEstimates"] = nestEstimates;
+            ViewData["NestEstimates"] = nestData;
 
-        return View();
+            return View();
+        }
     }
-
 }

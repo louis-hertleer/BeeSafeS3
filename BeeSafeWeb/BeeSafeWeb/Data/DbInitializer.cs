@@ -1,6 +1,7 @@
 ﻿using BeeSafeWeb.Utility.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BeeSafeWeb.Data
 {
@@ -8,236 +9,264 @@ namespace BeeSafeWeb.Data
     {
         public static void Initialize(BeeSafeContext context)
         {
+            // Ensure the database is created.
             context.Database.EnsureCreated();
 
-            // Check if data is already seeded
+            // If there are already devices, assume the DB is seeded.
             if (context.Devices.Any())
             {
-                return; // Database has been seeded
+                return;
             }
 
-            // Devices
+            // --- Seed Devices ---
+            // Create three devices with distinct coordinates.
             var devices = new List<Device>
             {
                 new Device
                 {
                     Id = Guid.NewGuid(),
-                    //Name = "Device A",
-                    Latitude = 51.168100,
-                    Longitude = 4.980800,
+                    Latitude = 51.1681,
+                    Longitude = 4.9808,
                     IsApproved = true,
                     IsTracking = true,
                     Direction = 45.0,
-                    DetectionEvents = new List<DetectionEvent>(),
-                    LastActive = DateTime.Now
+                    LastActive = DateTime.Now,
+                    DetectionEvents = new List<DetectionEvent>()
                 },
                 new Device
                 {
                     Id = Guid.NewGuid(),
-                    //Name = "Device B",
-                    Latitude = 51.168100,
-                    Longitude = 4.980720,
+                    Latitude = 51.1700,
+                    Longitude = 4.9850,
                     IsApproved = true,
-                    IsTracking = false,
+                    IsTracking = true,
                     Direction = 90.0,
-                    DetectionEvents = new List<DetectionEvent>(),
-                    LastActive = DateTime.Now
+                    LastActive = DateTime.Now,
+                    DetectionEvents = new List<DetectionEvent>()
                 },
                 new Device
                 {
                     Id = Guid.NewGuid(),
-                    IsApproved = false,
+                    Latitude = 51.1720,
+                    Longitude = 4.9820,
+                    IsApproved = true,
                     IsTracking = true,
-                    DetectionEvents = new List<DetectionEvent>(),
-                    LastActive = DateTime.Now
-                },
-                new Device
-                {
-                    Id = Guid.NewGuid(),
-                    Latitude = 51.168100,
-                    Longitude = 4.980980,
-                    IsApproved = false,
-                    IsTracking = true,
-                    DetectionEvents = new List<DetectionEvent>(),
-                    LastActive = DateTime.Now
-                  },
-                
-                
+                    Direction = 60.0,
+                    LastActive = DateTime.Now,
+                    DetectionEvents = new List<DetectionEvent>()
+                }
             };
 
             context.Devices.AddRange(devices);
 
-            // Known Hornets and Nest Estimates
-            var knownHornet = new KnownHornet
+            // --- Seed Known Hornets ---
+            // Create four distinct hornets.
+            var knownHornets = new List<KnownHornet>
             {
-                Id = Guid.NewGuid(),
-                NestEstimates = new List<NestEstimate>
-                {
-                    // Existing nest in Geel
-                    new NestEstimate
-                    {
-                        Id = Guid.NewGuid(),
-                        EstimatedLatitude = 51.168500,
-                        EstimatedLongitude = 4.980980,
-                        AccuracyLevel = 13.0,
-                        IsDestroyed = false,
-                        Timestamp = DateTime.Now
-                    },
-                    new NestEstimate
-                    {
-                        Id = Guid.NewGuid(),
-                        EstimatedLatitude = 51.168200,
-                        EstimatedLongitude = 4.981586,
-                        AccuracyLevel = 15.0,
-                        IsDestroyed = true,
-                        Timestamp = DateTime.Now
-                    },
-
-                    // Additional nest in Geel
-                    new NestEstimate
-                    {
-                        Id = Guid.NewGuid(),
-                        EstimatedLatitude = 51.165000, // Geel
-                        EstimatedLongitude = 4.989000,
-                        AccuracyLevel = 10.0,
-                        IsDestroyed = false,
-                        Timestamp = DateTime.Now
-                    },
-
-                    // Nests in Antwerpen
-                    new NestEstimate
-                    {
-                        Id = Guid.NewGuid(),
-                        EstimatedLatitude = 51.221109, // Antwerpen Central
-                        EstimatedLongitude = 4.399708,
-                        AccuracyLevel = 20.0,
-                        IsDestroyed = false,
-                        Timestamp = DateTime.Now
-                    },
-                    new NestEstimate
-                    {
-                        Id = Guid.NewGuid(),
-                        EstimatedLatitude = 51.230020, // Near Antwerp Zoo
-                        EstimatedLongitude = 4.421349,
-                        AccuracyLevel = 25.0,
-                        IsDestroyed = false,
-                        Timestamp = DateTime.Now
-                    },
-                    new NestEstimate
-                    {
-                        Id = Guid.NewGuid(),
-                        EstimatedLatitude = 51.219999, // Antwerp Market Square
-                        EstimatedLongitude = 4.400025,
-                        AccuracyLevel = 18.0,
-                        IsDestroyed = false,
-                        Timestamp = DateTime.Now
-                    },
-                    new NestEstimate
-                    {
-                        Id = Guid.NewGuid(),
-                        EstimatedLatitude = 51.210217, // Antwerp Harbour
-                        EstimatedLongitude = 4.392032,
-                        AccuracyLevel = 12.0,
-                        IsDestroyed = true,
-                        Timestamp = DateTime.Now
-                    }
-                }
+                new KnownHornet { Id = Guid.NewGuid(), NestEstimates = new List<NestEstimate>() },
+                new KnownHornet { Id = Guid.NewGuid(), NestEstimates = new List<NestEstimate>() },
+                new KnownHornet { Id = Guid.NewGuid(), NestEstimates = new List<NestEstimate>() },
+                new KnownHornet { Id = Guid.NewGuid(), NestEstimates = new List<NestEstimate>() }
             };
 
-// Add the known hornet nests to the database context
-            context.KnownHornets.Add(knownHornet);
+            context.KnownHornets.AddRange(knownHornets);
 
-
-            // Detection Events
-
+            // --- Seed Detection Events ---
+            // Create base detection events for each hornet (2 events per hornet).
+            var now = DateTime.Now;
             var detectionEvents = new List<DetectionEvent>
             {
+                // For knownHornet 1:
                 new DetectionEvent
                 {
                     Id = Guid.NewGuid(),
-                    Timestamp = DateTime.Now,
+                    Timestamp = now,
                     HornetDirection = 330.0,
-                    FirstDetection = DateTime.Now.AddMinutes(-10),
-                    SecondDetection = DateTime.Now.AddMinutes(-5),
+                    FirstDetection = now.AddMinutes(-15),
+                    SecondDetection = now.AddMinutes(-10),
                     Device = devices[0],
-                    KnownHornet = knownHornet
+                    KnownHornet = knownHornets[0]
                 },
                 new DetectionEvent
                 {
                     Id = Guid.NewGuid(),
-                    Timestamp = DateTime.Now,
+                    Timestamp = now,
+                    HornetDirection = 340.0,
+                    FirstDetection = now.AddMinutes(-14),
+                    SecondDetection = now.AddMinutes(-9),
+                    Device = devices[1],
+                    KnownHornet = knownHornets[0]
+                },
+                // For knownHornet 2:
+                new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = now,
+                    HornetDirection = 320.0,
+                    FirstDetection = now.AddMinutes(-13),
+                    SecondDetection = now.AddMinutes(-8),
+                    Device = devices[1],
+                    KnownHornet = knownHornets[1]
+                },
+                new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = now,
+                    HornetDirection = 310.0,
+                    FirstDetection = now.AddMinutes(-12),
+                    SecondDetection = now.AddMinutes(-7),
+                    Device = devices[2],
+                    KnownHornet = knownHornets[1]
+                },
+                // For knownHornet 3:
+                new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = now,
+                    HornetDirection = 350.0,
+                    FirstDetection = now.AddMinutes(-15),
+                    SecondDetection = now.AddMinutes(-10),
+                    Device = devices[2],
+                    KnownHornet = knownHornets[2]
+                },
+                new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = now,
+                    HornetDirection = 355.0,
+                    FirstDetection = now.AddMinutes(-14),
+                    SecondDetection = now.AddMinutes(-9),
+                    Device = devices[0],
+                    KnownHornet = knownHornets[2]
+                },
+                // For knownHornet 4:
+                new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = now,
+                    HornetDirection = 300.0,
+                    FirstDetection = now.AddMinutes(-10),
+                    SecondDetection = now.AddMinutes(-5),
+                    Device = devices[0],
+                    KnownHornet = knownHornets[3]
+                },
+                new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = now,
+                    HornetDirection = 305.0,
+                    FirstDetection = now.AddMinutes(-9),
+                    SecondDetection = now.AddMinutes(-4),
+                    Device = devices[1],
+                    KnownHornet = knownHornets[3]
+                },
+                // Additional detection event with null KnownHornet (will be ignored)
+                new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = now,
                     HornetDirection = 260.0,
-                    FirstDetection = DateTime.Now.AddMinutes(-10),
-                    SecondDetection = DateTime.Now.AddMinutes(-5),
-                    Device = devices[1],
-                    KnownHornet = null
-                },
-                new DetectionEvent
-                {
-                    Id = Guid.NewGuid(),
-                    Timestamp = DateTime.Now,
-                    HornetDirection = 325.0,
-                    FirstDetection = DateTime.Now.AddMinutes(-10),
-                    SecondDetection = DateTime.Now.AddMinutes(-5),
-                    Device = devices[0],
-                    KnownHornet = null
-                },
-                new DetectionEvent
-                {
-                    Id = Guid.NewGuid(),
-                    Timestamp = DateTime.Now,
-                    HornetDirection = 340.0, // Slightly north of 330
-                    FirstDetection = DateTime.Now.AddMinutes(-8),
-                    SecondDetection = DateTime.Now.AddMinutes(-4),
-                    Device = devices[0],
-                    KnownHornet = knownHornet
-                },
-                new DetectionEvent
-                {
-                    Id = Guid.NewGuid(),
-                    Timestamp = DateTime.Now,
-                    HornetDirection = 275.0, // Slightly west of 260
-                    FirstDetection = DateTime.Now.AddMinutes(-12),
-                    SecondDetection = DateTime.Now.AddMinutes(-7),
-                    Device = devices[1],
-                    KnownHornet = null
-                },
-                new DetectionEvent
-                {
-                    Id = Guid.NewGuid(),
-                    Timestamp = DateTime.Now,
-                    HornetDirection = 315.0, // Further along from 325
-                    FirstDetection = DateTime.Now.AddMinutes(-9),
-                    SecondDetection = DateTime.Now.AddMinutes(-4),
+                    FirstDetection = now.AddMinutes(-10),
+                    SecondDetection = now.AddMinutes(-5),
                     Device = devices[0],
                     KnownHornet = null
                 }
             };
+
+            // --- Add Additional Detection Events ---
+            // Hornet 1: Add 8 more events.
+            for (int i = 0; i < 8; i++)
+            {
+                detectionEvents.Add(new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = now,
+                    HornetDirection = 335.0 + i,  // Slight variation in direction
+                    FirstDetection = now.AddMinutes(-16 - i),
+                    SecondDetection = now.AddMinutes(-11 - i),
+                    Device = devices[i % devices.Count],
+                    KnownHornet = knownHornets[0]
+                });
+            }
+
+            // Hornet 2: Add 6 more events.
+            for (int i = 0; i < 6; i++)
+            {
+                detectionEvents.Add(new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = now,
+                    HornetDirection = 315.0 + i,  // Variation in direction
+                    FirstDetection = now.AddMinutes(-14 - i),
+                    SecondDetection = now.AddMinutes(-9 - i),
+                    Device = devices[i % devices.Count],
+                    KnownHornet = knownHornets[1]
+                });
+            }
+
+            // Hornet 3: Add 2 more events.
+            for (int i = 0; i < 2; i++)
+            {
+                detectionEvents.Add(new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = now,
+                    HornetDirection = 352.0 + i,  // Variation in direction
+                    FirstDetection = now.AddMinutes(-15 - i),
+                    SecondDetection = now.AddMinutes(-10 - i),
+                    Device = devices[i % devices.Count],
+                    KnownHornet = knownHornets[2]
+                });
+            }
+
+            // Hornet 4: Add 14 more events.
+            for (int i = 0; i < 14; i++)
+            {
+                detectionEvents.Add(new DetectionEvent
+                {
+                    Id = Guid.NewGuid(),
+                    Timestamp = now,
+                    HornetDirection = 298.0 + i,  // Variation in direction
+                    FirstDetection = now.AddMinutes(-11 - i),
+                    SecondDetection = now.AddMinutes(-6 - i),
+                    Device = devices[i % devices.Count],
+                    KnownHornet = knownHornets[3]
+                });
+            }
 
             context.DetectionEvents.AddRange(detectionEvents);
 
-            // Color Codes
+            // --- Optionally, Seed Pre-calculated Nest Estimates ---
+            // (Note: Your calculation service creates new nest estimates from detection events,
+            // so pre-seeded nest estimates may not be used when using the calculation-based controller.)
+            /*
+            var nestEstimates = new List<NestEstimate>
+            {
+                new NestEstimate
+                {
+                    Id = Guid.NewGuid(),
+                    EstimatedLatitude = 51.1690,
+                    EstimatedLongitude = 4.9830,
+                    AccuracyLevel = 10.0,
+                    IsDestroyed = false,
+                    Timestamp = now,
+                    KnownHornet = knownHornets[0]
+                }
+            };
+            context.NestEstimates.AddRange(nestEstimates);
+            */
+
+            // --- Seed Color Codes ---
             var colorCodes = new List<ColorCode>
             {
-                new ColorCode
-                {
-                    Id = Guid.NewGuid(),
-                    Color = "Red"
-                },
-                new ColorCode
-                {
-                    Id = Guid.NewGuid(),
-                    Color = "Green"
-                },
-                new ColorCode
-                {
-                    Id = Guid.NewGuid(),
-                    Color = "Blue"
-                }
+                new ColorCode { Id = Guid.NewGuid(), Color = "Red" },
+                new ColorCode { Id = Guid.NewGuid(), Color = "Green" },
+                new ColorCode { Id = Guid.NewGuid(), Color = "Blue" }
             };
 
             context.ColorCodes.AddRange(colorCodes);
 
+            // Save all changes to the database.
             context.SaveChanges();
         }
     }
