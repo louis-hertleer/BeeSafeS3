@@ -1,6 +1,7 @@
 @{
-ViewData["Title"] = "Home Page";
-var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic>;
+    var activeNests = ViewData["ActiveNests"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    var destroyedNests = ViewData["DestroyedNests"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    var totalNests = activeNests.Count() + destroyedNests.Count();
 }
 
 <!-- Parallax Scrolling Section -->
@@ -26,22 +27,19 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic>;
 <section class="bg-gray-800 dark:bg-gray-900 text-white py-16">
     <div class="container mx-auto flex flex-wrap justify-around text-center">
         <div class="w-full md:w-1/3 mb-6 md:mb-0">
-            <h2 class="text-5xl font-bold dark:text-yellow-400">@nestEstimates.Count()</h2>
+            <h2 class="text-5xl font-bold dark:text-yellow-400">@totalNests</h2>
             <p class="text-xl mt-2 dark:text-gray-300">Hornet Nests Tracked</p>
         </div>
         <div class="w-full md:w-1/3 mb-6 md:mb-0">
-            <!-- Since only active nests are passed, total and active counts are the same -->
-            <h2 class="text-5xl font-bold dark:text-yellow-400">@nestEstimates.Count()</h2>
+            <h2 class="text-5xl font-bold dark:text-yellow-400">@activeNests.Count()</h2>
             <p class="text-xl mt-2 dark:text-gray-300">Active Cases</p>
         </div>
         <div class="w-full md:w-1/3">
-            <!-- No destroyed nests will be present -->
-            <h2 class="text-5xl font-bold dark:text-yellow-400">0</h2>
+            <h2 class="text-5xl font-bold dark:text-yellow-400">@destroyedNests.Count()</h2>
             <p class="text-xl mt-2 dark:text-gray-300">Neutralized Nests</p>
         </div>
     </div>
 </section>
-
 <!-- Map and Info Section -->
 <div class="container mx-auto mt-10 px-4 sm:px-8 dark:bg-gray-900">
     <div class="flex justify-left mb-6">
@@ -116,7 +114,7 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic>;
 
     // Global nest data (active nests only) as passed in by the controller
     var nestEstimates = [
-        @foreach (var nest in (IEnumerable<dynamic>)ViewData["NestEstimates"])
+        @foreach (var nest in (IEnumerable<dynamic>)ViewData["ActiveNests"])
         {
         <text>, {
             lat: @nest.lat.ToString(System.Globalization.CultureInfo.InvariantCulture),
