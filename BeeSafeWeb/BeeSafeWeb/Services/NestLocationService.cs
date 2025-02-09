@@ -60,8 +60,9 @@ namespace BeeSafeWeb.Services
                         EstimatedLatitude = estimatedLocation.Value.Latitude,
                         EstimatedLongitude = estimatedLocation.Value.Longitude,
                         AccuracyLevel = CalculateAccuracy(events),
-                        IsDestroyed = false,  // Default to false in the computed estimate.
-                        Timestamp = DateTime.Now,
+                        IsDestroyed = false,
+                        // Use the latest second detection from the events as the timestamp.
+                        Timestamp = events.Max(e => e.SecondDetection),
                         KnownHornet = events.First().KnownHornet,
                         // Initially, set display properties equal to computed ones.
                         DisplayLatitude = estimatedLocation.Value.Latitude,
@@ -99,6 +100,7 @@ namespace BeeSafeWeb.Services
                         existing.EstimatedLatitude = estimate.EstimatedLatitude;
                         existing.EstimatedLongitude = estimate.EstimatedLongitude;
                         existing.AccuracyLevel = estimate.AccuracyLevel;
+                        // Use the latest timestamp from the detection events.
                         existing.Timestamp = estimate.Timestamp;
                         await _nestEstimateRepository.UpdateAsync(existing);
                         // Use the persisted ID.
@@ -184,7 +186,8 @@ namespace BeeSafeWeb.Services
                     EstimatedLongitude = avgLng,
                     AccuracyLevel = avgAccuracy,
                     IsDestroyed = cluster.First().IsDestroyed,
-                    Timestamp = cluster.First().Timestamp,
+                    // Use the maximum (latest) timestamp from the cluster
+                    Timestamp = cluster.Max(n => n.Timestamp),
                     KnownHornet = cluster.First().KnownHornet,
                     DisplayLatitude = avgLat,
                     DisplayLongitude = avgLng,
