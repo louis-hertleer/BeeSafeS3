@@ -18,6 +18,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 builder.Services.AddSingleton<SetupService>();
 
+builder.Services.AddScoped<NestLocationService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

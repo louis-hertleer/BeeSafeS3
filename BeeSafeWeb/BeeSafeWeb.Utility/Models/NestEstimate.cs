@@ -16,5 +16,10 @@ public class NestEstimate
 
     [NotMapped]
     public string LastUpdatedString => DateUtility.GetLastActiveString(Timestamp);
+    
+    // aggregated display properties:
+    public double? DisplayLatitude { get; set; }
+    public double? DisplayLongitude { get; set; }
+    public double? DisplayAccuracy { get; set; }
 
 }

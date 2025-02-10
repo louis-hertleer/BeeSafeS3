@@ -1,6 +1,7 @@
 ﻿@{
 ViewData["Title"] = "Home Page";
 var devices = ViewData["Devices"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+// The nestEstimates array contains both active and destroyed nests.
 var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
 }
 
@@ -10,20 +11,26 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
     </div>
 
     <div class="flex flex-wrap lg:flex-nowrap items-start gap-8 p-12 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-lg">
-
-        <!-- Leaflet Map - Slightly Reduced Width -->
+        <!-- Leaflet Map -->
         <div class="w-full lg:w-2/3 border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden shadow-md z-0">
             <div id="map" class="w-full h-[60vh] dark:bg-gray-700 z-0"></div>
         </div>
 
-        <!-- Information Section (More Space) -->
+        <!-- Information Section -->
         <div class="w-full lg:w-1/3 flex flex-col gap-6">
-
             <!-- Hornet Nest Info Box -->
             <div class="bg-white dark:bg-gray-700 dark:text-white p-6 rounded-lg shadow-lg border border-gray-300 dark:border-gray-600">
                 <h3 class="text-2xl font-bold flex items-center dark:text-yellow-400">
                     <span class="mr-2">🐝</span> Hornet Nest Info
                 </h3>
+                <!-- Toggle Switch for Filtering -->
+                <div id="nest-filter" class="mt-2 flex items-center">
+                    <div class="relative inline-block w-11 h-5">
+                        <input id="showDestroyedToggle" type="checkbox" class="peer appearance-none w-11 h-5 bg-gray-900 rounded-full checked:bg-yellow-500 cursor-pointer transition-colors duration-300" />
+                        <label for="showDestroyedToggle" class="absolute top-0 left-0 w-5 h-5 bg-white rounded-full border border-slate-300 shadow-sm transition-transform duration-300 peer-checked:translate-x-6 peer-checked:border-yellow-500 cursor-pointer"></label>
+                    </div>
+                    <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Show Destroyed Nests</span>
+                </div>
                 <p id="default-message" class="text-gray-600 dark:text-gray-300 mt-4 italic">
                     Click on a nest to view details.
                 </p>
@@ -36,6 +43,17 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
                 <p id="status-label" class="text-gray-700 dark:text-gray-300 mt-2 hidden">
                     ⚠ Status: <b id="status"></b>
                 </p>
+                <!-- Update Form -->
+                <div id="nest-status-buttons" class="mt-4 hidden">
+                    <form id="nest-status-form" method="post" action="@Url.Action("UpdateNestStatus", "Home")">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="id" name="id" value="" />
+                        <input type="hidden" id="isDestroyed" name="isDestroyed" value="" />
+                        <button type="submit" id="toggle-status-btn" class="bg-indigo-500 text-white px-4 py-2 rounded-md">
+                            Toggle Status
+                        </button>
+                    </form>
+                </div>
             </div>
 
             <!-- Device Overview Box -->
@@ -53,129 +71,159 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
                 <h3 class="text-2xl font-bold flex items-center dark:text-yellow-400">
                     <span class="mr-2">🔍</span> Device Info
                 </h3>
-                <p id="device-message" class="text-gray-600 dark:text-gray-300 mt-4">Click on a device marker to see details.</p>
-                <p id="device-status-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Status: <b id="device-status"></b></p>
-                <p id="device-mode-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Current mode: <b id="device-mode"></b></p>
-                <p id="device-last-active-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">Last active: <b id="device-last-active"></b></p>
+                <p id="device-message" class="text-gray-600 dark:text-gray-300 mt-4">
+                    Click on a device marker to see details.
+                </p>
+                <p id="device-status-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">
+                    Status: <b id="device-status"></b>
+                </p>
+                <p id="device-mode-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">
+                    Current mode: <b id="device-mode"></b>
+                </p>
+                <p id="device-last-active-label" class="text-gray-600 dark:text-gray-300 mt-2 hidden">
+                    Last active: <b id="device-last-active"></b>
+                </p>
             </div>
-
-
-
         </div>
-
     </div>
 </div>
 
+@section Scripts {
+<script>
+    var selectedNestId = null; // Global variable for the selected nest id
 
-@section Scripts
-{
-    <script>
-        var map = L.map('map');
+    // Initialize the map.
+    var map = L.map('map');
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
 
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
+    var deviceBounds = [];
 
-        // Store device bounds to fit map to them later
-        var deviceBounds = [];
+    // Device data from the backend.
+    var devices = [
+        @foreach (var device in devices)
+        {
+        <text>,{
+            lat: @device.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            lng: @device.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            id: '@device.Id',
+            isOnline: @(device.IsOnline ? "true" : "false"),
+            isTracking: @(device.IsTracking ? "true" : "false"),
+            lastActive: '@device.LastActiveString'
+        },</text>
+        }
+    ];
 
-        // Device data from the backend
-        var devices = [
-            @foreach (var device in devices)
-            {
-                <text>, {
-                    lat: @device.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                    lng: @device.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                    id: '@device.Id',
-                    isOnline: @(device.IsOnline ? "true" : "false"),
-                    isTracking: @(device.IsTracking ? "true" : "false"),
-                    lastActive: '@device.LastActiveString'
-                }, </text>
-            }
-        ];
-
-        // Add markers for all devices
-        devices.forEach(device => {
-            if (device.lat && device.lng) {
-                var markerColor = device.isOnline === "true" ? "blue" : "gray";
-
-                var deviceMarker = L.marker([device.lat, device.lng])
-                    .addTo(map)
-                    .bindPopup(`
+    devices.forEach(function(device) {
+        if (device.lat && device.lng) {
+            var markerColor = device.isOnline === "true" ? "blue" : "gray";
+            var deviceMarker = L.marker([device.lat, device.lng])
+                .addTo(map)
+                .bindPopup(`
                         <b>Device Info</b><br>
                         Status: ${device.isOnline === "true" ? 'Online' : 'Offline'}<br>
                         Mode: ${device.isTracking === "true" ? 'Tracking' : 'Defence'}<br>
                         Last Active: ${device.lastActive}
                     `);
+            deviceBounds.push([device.lat, device.lng]);
 
-                // Store marker location to fit bounds later
-                deviceBounds.push([device.lat, device.lng]);
-
-                deviceMarker.on('click', function () {
-                    document.getElementById('device-status').innerText = device.isOnline === "true" ? 'Online' : 'Offline';
-                    document.getElementById('device-mode').innerText = device.isTracking === "true" ? 'Tracking' : 'Defence';
-                    document.getElementById('device-last-active').innerText = device.lastActive;
-
-                    // Hide default message and show device info labels
-                    document.getElementById('device-message').style.display = 'none';
-                    document.getElementById('device-status-label').classList.remove('hidden');
-                    document.getElementById('device-mode-label').classList.remove('hidden');
-                    document.getElementById('device-last-active-label').classList.remove('hidden');
-                });
-
-            }
-        });
-
-        // Adjust map to fit all device markers
-        if (deviceBounds.length > 0) {
-            map.fitBounds(deviceBounds, {
-                padding: [50, 50], // Add padding around the bounds
-                maxZoom: 18,
-                animate: true
+            deviceMarker.on('click', function () {
+                document.getElementById('device-status').innerText = device.isOnline === "true" ? 'Online' : 'Offline';
+                document.getElementById('device-mode').innerText = device.isTracking === "true" ? 'Tracking' : 'Defence';
+                document.getElementById('device-last-active').innerText = device.lastActive;
+                document.getElementById('device-message').style.display = 'none';
+                document.getElementById('device-status-label').classList.remove('hidden');
+                document.getElementById('device-mode-label').classList.remove('hidden');
+                document.getElementById('device-last-active-label').classList.remove('hidden');
             });
-        } else {
-            map.setView([51.168300, 4.980980], 10); // Default view if no devices found
         }
+    });
 
-        // Nest data array from the backend
-        var nestEstimates = [
-            @foreach (var nest in nestEstimates)
-            {
-                <text>, {
-                    lat: @nest.EstimatedLatitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                    lng: @nest.EstimatedLongitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                    radius: @nest.AccuracyLevel,
-                    timestamp: '@nest.LastUpdatedString',
-                    isDestroyed: @(nest.IsDestroyed ? 1 : 0)
-                }, </text>
+    if (deviceBounds.length > 0) {
+        map.fitBounds(deviceBounds, {
+            padding: [50, 50],
+            maxZoom: 18,
+            animate: true
+        });
+    } else {
+        map.setView([51.168300, 4.980980], 10);
+    }
+
+    // Nest estimates array from the backend.
+    var nestEstimates = [
+        @foreach (var nest in (IEnumerable<dynamic>)ViewData["NestEstimates"])
+        {
+        <text>,{
+            id: '@nest.id',
+            lat: @nest.lat.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            lng: @nest.lng.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            radius: @nest.radius.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            timestamp: '@nest.LastUpdatedString',
+            IsDestroyed: @(nest.IsDestroyed ? 1 : 0)
+        },</text>
+        }
+    ];
+
+    // Global array to hold nest circles on the map.
+    var nestCircles = [];
+
+    function clearNestCircles() {
+        nestCircles.forEach(function(circle) {
+            map.removeLayer(circle);
+        });
+        nestCircles = [];
+    }
+
+    function renderNestCircles() {
+        clearNestCircles();
+        // Get the filter setting from the toggle.
+        var showDestroyed = document.getElementById('showDestroyedToggle').checked;
+        nestEstimates.forEach(function(nest) {
+            // If the toggle is off and this nest is destroyed, skip rendering.
+            if (!showDestroyed && nest.IsDestroyed === 1) {
+                return;
             }
-        ];
-
-        // Add circles for all nest estimates
-        nestEstimates.forEach(nest => {
-            var circleColor = nest.isDestroyed === 1 ? "green" : "red";
-            var fillColor = nest.isDestroyed === 1 ? "#0f0" : "#f03";
-
+            var circleColor = nest.IsDestroyed === 1 ? "green" : "red";
+            var fillColor = nest.IsDestroyed === 1 ? "#0f0" : "#f03";
             var circle = L.circle([nest.lat, nest.lng], {
                 color: circleColor,
                 fillColor: fillColor,
                 fillOpacity: 0.5,
-                radius: nest.radius
-            }).addTo(map).bindPopup(`Accuracy: ${nest.radius}m`);
+                radius: parseFloat(nest.radius)
+            }).addTo(map).bindPopup(`Accuracy: ${parseFloat(nest.radius).toFixed(2)}m`);
 
-            // Click event to show nest details
             circle.on('click', function () {
-                document.getElementById('accuracy').innerText = nest.radius;
+                selectedNestId = nest.id;
+                document.getElementById('accuracy').innerText = parseFloat(nest.radius).toFixed(2);
                 document.getElementById('timestamp').innerText = nest.timestamp;
-                document.getElementById('status').innerText = nest.isDestroyed === 1 ? "Destroyed" : "Active";
-
-                // Hide the default message and show actual info
+                document.getElementById('status').innerText = nest.IsDestroyed === 1 ? "Destroyed" : "Active";
+                document.getElementById('id').value = nest.id;
+                var newStatus = (nest.IsDestroyed === 1) ? false : true;
+                document.getElementById('isDestroyed').value = newStatus;
+                var toggleBtn = document.getElementById('toggle-status-btn');
+                toggleBtn.innerText = newStatus ? "Mark as Destroyed" : "Mark as Active";
                 document.getElementById('default-message').style.display = 'none';
                 document.getElementById('accuracy-label').classList.remove('hidden');
                 document.getElementById('timestamp-label').classList.remove('hidden');
                 document.getElementById('status-label').classList.remove('hidden');
+                document.getElementById('nest-status-buttons').classList.remove('hidden');
             });
+            nestCircles.push(circle);
         });
-    </script>
+    }
+
+    // When the toggle is changed, re-render the nest circles.
+    document.getElementById('showDestroyedToggle').addEventListener('change', function () {
+        renderNestCircles();
+    });
+
+    // Initially render nest circles.
+    renderNestCircles();
+
+    document.getElementById('nest-status-form').addEventListener('submit', function (e) {
+        // Form submission; no logging here.
+    });
+</script>
 }
