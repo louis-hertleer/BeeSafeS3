@@ -60,7 +60,22 @@ namespace BeeSafeWeb.Data
                     IsTracking = true,
                     DetectionEvents = new List<DetectionEvent>(),
                     LastActive = DateTime.Now
-                  },
+                },
+                /*
+                new Device
+                {
+                    Id = Guid.NewGuid(),
+                    //Name = "Device C",
+                    Latitude = 51.168100,
+                    Longitude = 4.981,
+                    IsApproved = true,
+                    IsDeclined = false,
+                    IsTracking = false,
+                    Direction = 40.0,
+                    DetectionEvents = new List<DetectionEvent>(),
+                    LastActive = DateTime.Now
+                },
+                */
                 
                 
             };
@@ -202,6 +217,7 @@ namespace BeeSafeWeb.Data
                     Device = devices[1],
                     KnownHornet = null
                 },
+                /*
                 new DetectionEvent
                 {
                     Id = Guid.NewGuid(),
@@ -209,9 +225,10 @@ namespace BeeSafeWeb.Data
                     HornetDirection = 315.0, // Further along from 325
                     FirstDetection = DateTime.Now.AddMinutes(-9),
                     SecondDetection = DateTime.Now.AddMinutes(-4),
-                    Device = devices[0],
+                    Device = devices[4],
                     KnownHornet = null
                 }
+            */
             };
 
             context.DetectionEvents.AddRange(detectionEvents);

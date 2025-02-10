@@ -1,9 +1,11 @@
 using BeeSafeWeb.Data;
 using BeeSafeWeb.Utility.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BeeSafeWeb.Controllers;
 
+[Authorize]
 public class DetectionController : Controller
 {
     private readonly IRepository<DetectionEvent> _detectionEventRepository;
@@ -47,8 +49,12 @@ public class DetectionController : Controller
                 d.Direction,
                 d.IsOnline,
                 d.IsTracking,
-                d.LastActiveString
-            }).ToList();
+                d.IsApproved,
+                d.LastActiveString,
+                d.IsDeclined
+            })
+            .Where(d => d.IsApproved && !d.IsDeclined)
+            .ToList();
         ViewData["Devices"] = devices;
         return View(detections);
     }
