@@ -26,6 +26,7 @@
 
     <ItemGroup>
       <_ContentIncludedByDefault Remove="Views\Auth\Login.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Nest\Index.cshtml" />
     </ItemGroup>
 
     <ItemGroup>
