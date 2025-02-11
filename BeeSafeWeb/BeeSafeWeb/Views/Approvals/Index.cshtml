@@ -5,9 +5,20 @@ List<Device> devices = Model;
 <div class="p-4">
     <div>
         <h1 class="text-3xl font-bold text-center">Pending Devices</h1>
-        <p class="text-center">Here you can see the devices that are pending approval. Click "Set Location" to select a location on the map.</p>
+        <p class="text-center">
+            @if (devices.Count > 0)
+            {
+                <span>Here you can see the devices that are pending approval. Click "Set Location" view and select the location on the map.</span>
+            }
+            else
+            {
+                <span>There are no pending devices at the moment. Please check again later!</span>
+            }
+        </p>
     </div>
 
+    @if(devices.Count > 0)
+    {
     <div class="overflow-x-auto mt-4">
         <table class="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md text-sm sm:text-lg">
             <thead class="bg-gray-200 dark:bg-gray-700 text-center">
@@ -22,52 +33,53 @@ List<Device> devices = Model;
             <tbody>
             @foreach (var device in devices)
             {
-            <tr class="text-center border-t">
-                <td class="py-3 px-4">@device.LastActive.ToString("d/M/yyyy HH:mm")</td>
-                <td class=" px-4">
-                    <input id="latitude-@device.Id"
-                           class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
-                           value="@device.Latitude">
-                </td>
-                <td class="py-3 px-4">
-                    <input id="longitude-@device.Id"
-                           class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
-                           value="@device.Longitude">
-                </td>
-                <td class="py-3 px-4">
-                    <input id="direction-@device.Id"
-                           class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
-                           value="@device.Direction">
-                </td>
-                <td class="py-3 px-4 text-center">
-                    <div class="flex flex-col sm:flex-row gap-2 justify-center items-center">
-                        <button class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition duration-200"
-                                onclick="openModal('@device.Id')">
-                            Set Location
-                        </button>
-
-                        <form id="approval-form-@device.Id" class="hidden flex" method="post" action="@Url.Action("ApproveDevice", "Approvals")">
-                            <input type="hidden" name="id" value="@device.Id">
-                            <input type="hidden" id="form-latitude-@device.Id" name="latitude">
-                            <input type="hidden" id="form-longitude-@device.Id" name="longitude">
-                            <input type="hidden" id="form-direction-@device.Id" name="direction">
-                            <button type="submit" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 transition duration-200">
-                                Approve
+                <tr class="text-center border-t">
+                    <td class="py-3 px-4">@device.LastActive.ToString("d/M/yyyy HH:mm")</td>
+                    <td class=" px-4">
+                        <input id="latitude-@device.Id"
+                               class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
+                               value="@device.Latitude">
+                    </td>
+                    <td class="py-3 px-4">
+                        <input id="longitude-@device.Id"
+                               class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
+                               value="@device.Longitude">
+                    </td>
+                    <td class="py-3 px-4">
+                        <input id="direction-@device.Id"
+                               class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
+                               value="@device.Direction">
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex flex-col sm:flex-row gap-2 justify-center items-center">
+                            <button class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition duration-200"
+                                    onclick="openModal('@device.Id')">
+                                Set Location
                             </button>
-                        </form>
 
-                        <form method="post" onsubmit="rejectDevice(event)" asp-action="RejectDevice" asp-controller="Approvals">
-                            <button type="submit" class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600 transition duration-200">
-                                Decline
-                            </button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
+                            <form id="approval-form-@device.Id" class="hidden flex" method="post" action="@Url.Action("ApproveDevice", "Approvals")">
+                                <input type="hidden" name="id" value="@device.Id">
+                                <input type="hidden" id="form-latitude-@device.Id" name="latitude">
+                                <input type="hidden" id="form-longitude-@device.Id" name="longitude">
+                                <input type="hidden" id="form-direction-@device.Id" name="direction">
+                                <button type="submit" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 transition duration-200">
+                                    Approve
+                                </button>
+                            </form>
+
+                            <form method="post" onsubmit="rejectDevice(event)" asp-action="RejectDevice" asp-controller="Approvals">
+                                <button type="submit" class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600 transition duration-200">
+                                    Decline
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
             }
             </tbody>
         </table>
     </div>
+    }
 </div>
 
 <!-- Location Modal -->
