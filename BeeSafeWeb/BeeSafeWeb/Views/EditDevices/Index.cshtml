@@ -1,31 +1,26 @@
 @{
-ViewData["Title"] = "Show Pending Devices";
-List<Device> devices = Model;
-}
-<div class="p-4">
-    <div>
-        <h1 class="text-3xl font-bold text-center">Pending Devices</h1>
-        <p class="text-center">Here you can see the devices that are pending approval. Click "Set Location" to select a location on the map.</p>
-    </div>
+    Layout = "_Layout";
 
-    <div class="overflow-x-auto mt-4">
-        <table class="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md text-sm sm:text-lg">
-            <thead class="bg-gray-200 dark:bg-gray-700 text-center">
-            <tr>
-                <th class="py-3 px-4 border">Last Active</th>
-                <th class="py-3 px-4 border">Latitude</th>
-                <th class="py-3 px-4 border">Longitude</th>
-                <th class="py-3 px-4 border">Direction</th>
-                <th class="py-3 px-4 border">Action</th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach (var device in devices)
-            {
+    var devices = Model;
+}
+
+<div>
+<table class="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md text-sm sm:text-lg">
+    <thead class="bg-gray-200 dark:bg-gray-700 text-center">
+    <tr>
+        <th class="py-3 px-4 border">Latitude</th>
+        <th class="py-3 px-4 border">Longitude</th>
+        <th class="py-3 px-4 border">Direction</th>
+        <th class="py-3 px-4 border">Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var device in devices)
+    {
             <tr class="text-center border-t">
-                <td class="py-3 px-4">@device.LastActive.ToString("d/M/yyyy HH:mm")</td>
                 <td class=" px-4">
                     <input id="latitude-@device.Id"
+                           name="Latitude"
                            class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
                            value="@device.Latitude">
                 </td>
@@ -42,35 +37,27 @@ List<Device> devices = Model;
                 <td class="py-3 px-4 text-center">
                     <div class="flex flex-col sm:flex-row gap-2 justify-center items-center">
                         <button class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition duration-200"
+                                type="button"
                                 onclick="openModal('@device.Id')">
                             Set Location
                         </button>
-
-                        <form id="approval-form-@device.Id" class="hidden flex" method="post" action="@Url.Action("ApproveDevice", "Approvals")">
+                        <form id="approval-form-@device.Id" asp-action="Update" method="post" asp-route-id="@device.Id">
                             <input type="hidden" name="id" value="@device.Id">
                             <input type="hidden" id="form-latitude-@device.Id" name="latitude">
                             <input type="hidden" id="form-longitude-@device.Id" name="longitude">
                             <input type="hidden" id="form-direction-@device.Id" name="direction">
                             <button type="submit" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 transition duration-200">
-                                Approve
-                            </button>
-                        </form>
-
-                        <form method="post" onsubmit="rejectDevice(event)" asp-action="RejectDevice" asp-controller="Approvals">
-                            <button type="submit" class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600 transition duration-200">
-                                Decline
+                                Save Changes
                             </button>
                         </form>
                     </div>
                 </td>
             </tr>
-            }
-            </tbody>
-        </table>
-    </div>
+    }
+    </tbody>
+</table>
 </div>
 
-<!-- Location Modal -->
 <div id="location-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-4xl shadow-lg relative w-full max-w-lg sm:max-w-2xl">
         <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white text-center">Set Device Location</h2>
@@ -99,8 +86,7 @@ List<Device> devices = Model;
     </div>
 </div>
 
-
-@section Scripts {
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="~/js/device.js"></script>
+@section Scripts
+{
+    <script src="~/js/device.js"></script>
 }
