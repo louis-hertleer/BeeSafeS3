@@ -10,10 +10,11 @@ permissions:
   issues: write
 
 jobs:
+  # Run Owasp ZAP scan on running application for security testing
   zap_scan:
     runs-on: ubuntu-latest
     steps:
-      # Wait for 2 minutes
+      # Wait for 2 minutes to let the deploy complete
       - name: Wait for 2 minutes
         run: sleep 120
 
@@ -38,10 +39,10 @@ jobs:
           DATE=$(date '+%Y-%m-%d')
           echo "DATETIME=$DATE" >> $GITHUB_ENV
 
-      # Run ZAP Baseline Scan
+      # Run ZAP Full Scan
       - name: Run ZAP Full Scan
         uses: zaproxy/action-full-scan@v0.12.0
         with:
           target: ${{ secrets.APPLICATION_URL }}
           cmd_options: '-t ${{ secrets.APPLICATION_URL }} '
-          issue_title: "ZAP Report - ${{ env.DATETIME }}"
+          issue_title: "ZAP Report - ${{ env.DATETIME }}" # Post a issue in the Github repo with the results
