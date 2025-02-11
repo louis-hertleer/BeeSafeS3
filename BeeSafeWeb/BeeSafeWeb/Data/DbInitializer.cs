@@ -31,7 +31,8 @@ namespace BeeSafeWeb.Data
                     IsTracking = true,
                     Direction = 45.0,
                     LastActive = DateTime.Now,
-                    DetectionEvents = new List<DetectionEvent>()
+                    DetectionEvents = new List<DetectionEvent>(),
+                    Name = "device 1"
                 },
                 new Device
                 {
@@ -42,7 +43,9 @@ namespace BeeSafeWeb.Data
                     IsTracking = true,
                     Direction = 90.0,
                     LastActive = DateTime.Now,
-                    DetectionEvents = new List<DetectionEvent>()
+                    DetectionEvents = new List<DetectionEvent>(),
+                    Name = "device 2"
+
                 },
                 new Device
                 {
@@ -53,7 +56,9 @@ namespace BeeSafeWeb.Data
                     IsTracking = true,
                     Direction = 60.0,
                     LastActive = DateTime.Now,
-                    DetectionEvents = new List<DetectionEvent>()
+                    DetectionEvents = new List<DetectionEvent>(),
+                    Name = "device 3"
+
                 }
             };
 

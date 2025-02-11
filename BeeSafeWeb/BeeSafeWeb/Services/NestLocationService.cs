@@ -50,26 +50,35 @@ namespace BeeSafeWeb.Services
                 if (events.Count < 2)
                     continue;
 
-                // Calculate the intersection point.
-                var estimatedLocation = CalculateIntersection(events);
-                if (estimatedLocation != null)
+                // Calculate the intersection point using the helper function.
+                var intersection = CalculateIntersection(events);
+                if (intersection == null)
+                    continue;
+
+                // Define computedLatitude and computedLongitude based on the intersection.
+                double computedLatitude = intersection.Value.Latitude;
+                double computedLongitude = intersection.Value.Longitude;
+
+                // Assume each detection event has a reference to its Device.
+                var device = events.First().Device;
+
+                // Calculate accuracy using a method that blends manual override if set.
+                double accuracy = CalculateAccuracy(events, device);
+
+                // Create a new nest estimate using the computed values.
+                nestEstimates.Add(new NestEstimate
                 {
-                    nestEstimates.Add(new NestEstimate
-                    {
-                        Id = Guid.NewGuid(), // Temporary new Guid
-                        EstimatedLatitude = estimatedLocation.Value.Latitude,
-                        EstimatedLongitude = estimatedLocation.Value.Longitude,
-                        AccuracyLevel = CalculateAccuracy(events),
-                        IsDestroyed = false,
-                        // Use the latest second detection from the events as the timestamp.
-                        Timestamp = events.Max(e => e.SecondDetection),
-                        KnownHornet = events.First().KnownHornet,
-                        // Initially, set display properties equal to computed ones.
-                        DisplayLatitude = estimatedLocation.Value.Latitude,
-                        DisplayLongitude = estimatedLocation.Value.Longitude,
-                        DisplayAccuracy = CalculateAccuracy(events)
-                    });
-                }
+                    Id = Guid.NewGuid(),
+                    EstimatedLatitude = computedLatitude,
+                    EstimatedLongitude = computedLongitude,
+                    AccuracyLevel = accuracy,
+                    IsDestroyed = false,
+                    Timestamp = events.Max(e => e.SecondDetection),
+                    KnownHornet = events.First().KnownHornet,
+                    DisplayLatitude = computedLatitude,
+                    DisplayLongitude = computedLongitude,
+                    DisplayAccuracy = accuracy
+                });
             }
 
             // Aggregate (cluster) nest estimates that are very close together.
@@ -119,6 +128,10 @@ namespace BeeSafeWeb.Services
             return computedEstimates;
         }
 
+        /// <summary>
+        /// Calculates an approximate intersection point from a list of detection events.
+        /// Here we simply use the average of the two device coordinates from the first two events.
+        /// </summary>
         private (double Latitude, double Longitude)? CalculateIntersection(List<DetectionEvent> events)
         {
             if (events.Count < 2)
@@ -136,22 +149,45 @@ namespace BeeSafeWeb.Services
             return (lat, lon);
         }
 
-        private double CalculateAccuracy(List<DetectionEvent> events)
+        /// <summary>
+        /// Calculates an accuracy value based on detection events and optionally blends a manual override from the device.
+        /// </summary>
+        private double CalculateAccuracy(List<DetectionEvent> events, Device device)
         {
             // Assume hornet's flight speed is 11.1 m/s.
             const double flightSpeed = 11.1;
+
+            // Calculate average trip time (in seconds) from detection events.
             double avgTripTimeSeconds = events.Average(e => (e.SecondDetection - e.FirstDetection).TotalSeconds);
             double distanceEstimate = flightSpeed * avgTripTimeSeconds;
-            double avgDirection = events.Average(e => e.HornetDirection);
-            double directionStdDev = Math.Sqrt(events.Average(e => Math.Pow(e.HornetDirection - avgDirection, 2)));
+
+            // Compute the automatic average hornet direction from the events.
+            double autoDirection = events.Average(e => e.HornetDirection);
+
+            // If the device has a manual override, blend it with the automatic value.
+            double finalDirection = autoDirection;
+            if (device.IsManualDirectionSet && device.ManualHornetDirection.HasValue)
+            {
+                // For example, use 80% of the manual value and 20% of the automatic value.
+                finalDirection = (0.8 * device.ManualHornetDirection.Value + 0.2 * autoDirection) % 360;
+            }
+
+            // Compute the standard deviation using the final (blended) direction.
+            double directionStdDev = Math.Sqrt(events.Average(e => Math.Pow(e.HornetDirection - finalDirection, 2)));
+
+            // Use the blended direction in the accuracy calculation.
             double rawAccuracy = distanceEstimate * (1 + (directionStdDev / 45.0)) / events.Count;
-            double calibrationFactor = 0.2;
+            double calibrationFactor = 0.2; // Adjust as needed.
             double scaledAccuracy = rawAccuracy * calibrationFactor;
             double maxAccuracy = 200.0;
             double finalAccuracy = Math.Min(scaledAccuracy, maxAccuracy);
+
             return finalAccuracy;
         }
 
+        /// <summary>
+        /// Aggregates nest estimates that are within a specified threshold.
+        /// </summary>
         private List<NestEstimate> AggregateNestEstimates(List<NestEstimate> estimates, double thresholdMeters)
         {
             var aggregated = new List<NestEstimate>();
@@ -186,7 +222,7 @@ namespace BeeSafeWeb.Services
                     EstimatedLongitude = avgLng,
                     AccuracyLevel = avgAccuracy,
                     IsDestroyed = cluster.First().IsDestroyed,
-                    // Use the maximum (latest) timestamp from the cluster
+                    // Use the maximum (latest) timestamp from the cluster.
                     Timestamp = cluster.Max(n => n.Timestamp),
                     KnownHornet = cluster.First().KnownHornet,
                     DisplayLatitude = avgLat,
