@@ -1,7 +1,7 @@
 name: "CodeQL Advanced"
 
 on:
-  pull_request:
+  push:
     branches:
       - main
 # Analyse code on Pull Request, before pushing to main
