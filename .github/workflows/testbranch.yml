@@ -1,14 +1,13 @@
-name: Deploy to Azure
+name: Deploy to Azure (Testing)
 'on':
   push:
     branches:
-      - main
       - test
-  # Run full pipeline on push to main
+  # Run on push to testing Branch
 jobs:
   # Build the Docker image and push it to DockerHub
   build-and-push:
-    name: Build and Push Docker Image
+    name: Build and Push Test Docker Image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -20,13 +19,13 @@ jobs:
           password: '${{ secrets.DOCKER_PASSWORD }}'
       - name: Build Docker Image
         run: >-
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/beesafeapp:latest
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/beesafeapptest:latest
           ./BeeSafeWeb/
       - name: Push Docker Image to DockerHub
-        run: 'docker push ${{ secrets.DOCKER_USERNAME }}/beesafeapp:latest'
+        run: 'docker push ${{ secrets.DOCKER_USERNAME }}/beesafeapptest:latest'
   # Deploy job to provision application to Azure
   deploy:
-    name: Deploy to Azure Container Instance
+    name: Deploy to Azure Container TestInstance
     runs-on: ubuntu-latest
     needs: build-and-push
     steps:
@@ -36,41 +35,49 @@ jobs:
         uses: azure/login@v1
         with:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
-      - name: Check if SQL Server exists  # Create SQL server to be able to create database
+      - name: Check if MySQL TestServer exists  # Create MySQL server to be able to create database
         id: check-server-exists
-        run: |
-          SERVER_EXISTS=$(az sql server show --name dbbeesafe --resource-group BeeSafe --query "name" -o tsv || echo "")
+        run: >
+          SERVER_EXISTS=$(az mysql flexible-server show --name
+          beesafe-mysql-testserver --resource-group BeeSafe --query "name" -o tsv ||
+          echo "")
+
           echo "Server Exists: $SERVER_EXISTS"
+          
           if [[ -n "$SERVER_EXISTS" ]]; then
-            echo "SQL server already exists, skipping creation."
+            echo "MySQL server already exists, skipping creation."
           else
-            echo "SQL server does not exist, proceeding with creation."
-            az sql server create \
-              --name dbbeesafe \
+            echo "MySQL server does not exist, proceeding with creation."
+            az mysql flexible-server create \
+              --name beesafe-mysql-testserver \
               --resource-group BeeSafe \
               --location uksouth \
-              --admin-user ${{ secrets.SQL_USER }} \
-              --admin-password ${{ secrets.SQL_PASSWORD }} \
+              --admin-user ${{ secrets.MYSQL_USER }} \
+              --admin-password ${{ secrets.MYSQL_PASSWORD }} \
+              --sku-name Standard_B1ms \
+              --storage-size 32 \
+              --version 8.0.21 \
+              --public-access 0.0.0.0
           fi
 
-      - name: Check if SQL Database exists # Database to store application data
+      - name: Check if MySQL TestDatabase exists # Database to store application data
         run: |
-          DB_EXISTS=$(az sql db list \
-          --server dbbeesafe \
-          --resource-group BeeSafe \
-          --query "[?name=='beesafe']" -o tsv)
-    
+          DB_EXISTS=$(az mysql flexible-server db list \
+            --server-name beesafe-mysql-testserver \
+            --resource-group BeeSafe \
+            --query "[?name=='beesafe-testdb']" -o tsv)
+          
           if [[ -z "$DB_EXISTS" ]]; then
-            echo "Database 'beesafe' does not exist. Creating the database..."
-            az sql db create \
+            echo "Database 'beesafe-testdb' does not exist. Creating the database..."
+            az mysql flexible-server db create \
               --resource-group BeeSafe \
-              --server dbbeesafe \
-              --name beesafe-db \
+              --server-name beesafe-mysql-testserver \
+              --database-name beesafe-testdb
           else
-            echo "Database 'beesafe' already exists. Skipping creation."
+            echo "Database 'beesafe-testdb' already exists. Skipping creation."
           fi
-
-      - name: Check if Container App Environment Exists # Container app environment (CAE) needed to run container app in
+        
+      - name: Check if Container TestApp Environment Exists # Container app environment (CAE) needed to run container app in
         run: |
           ENV_NAME="caebeesafe"
           RESOURCE_GROUP="BeeSafe"
@@ -94,23 +101,23 @@ jobs:
       - name: Deploy Container to Azure Container Instance # Deploy the container app in the CAE
         uses: nick-invision/retry@v2 # If container app fails to create, retry 2 more times
         with:
-          timeout_minutes: 3 
+          timeout_minutes: 3
           max_attempts: 3
           retry_wait_seconds: 15
           command: |
             az containerapp create \
-              --name beesafe-app-container \
+              --name beesafe-testapp-container \
               --resource-group BeeSafe \
-              --image docker.io/${{ secrets.DOCKER_USERNAME }}/beesafeapp:latest \
+              --image docker.io/${{ secrets.DOCKER_USERNAME }}/beesafetestapp:latest \
               --cpu 0.5 \
               --memory 1.0 \
               --registry-server docker.io \
               --registry-username ${{ secrets.DOCKER_USERNAME }} \
               --registry-password ${{ secrets.DOCKER_PASSWORD }} \
               --target-port 8080 \
-              --env-vars ConnectionStrings__DefaultConnection="Server=tcp:dbbeesafe.database.windows.net,1433;Initial Catalog=beesafe;Persist Security Info=False;User ID=${{ secrets.SQL_USER }};Password=${{ secrets.SQL_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" \
+              --env-vars ConnectionStrings__DefaultConnection="Server=tcp:dbbeesafe.database.windows.net,1433;Initial Catalog=beesafe;Persist Security Info=False;User ID=${{ secrets.MYSQL_USER }};Password=${{ secrets.MYSQL_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" \
               --ingress external \
-              --environment caebeesafe 
+              --environment testcaebeesafe 
           # Create container app by pulling docker image from DockerHub, open port 8080 for application, add connection string for connection with database, ingress external to make it publicly available
 
       - name: Get Domain Name and Save to ENV # Get domain name from application app, save it to variable for later DAST testing
@@ -118,11 +125,8 @@ jobs:
         run: |
           # Get the FQDN of the deployed container app
           fqdn=$(az containerapp show \
-            --name beesafe-app-container \
+            --name beesafe-testapp-container \
             --resource-group BeeSafe \
             --query "properties.configuration.ingress.fqdn" \
             --output tsv)
-          
-          # Output the FQDN for other steps
-          echo "APPLICATION_URL=https://$fqdn" >> $GITHUB_ENV
-          echo "Container App Public URL: https://$fqdn"
+
