@@ -12,18 +12,21 @@ public class SetupModel : PageModel
     private readonly IUserStore<IdentityUser> _userStore;
     private readonly IUserEmailStore<IdentityUser> _userEmailStore;
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly SignInManager<IdentityUser> _signInManager;
     
     [BindProperty] 
     public RegisterModel.InputModel Input { get; set; }
 
     public SetupModel(SetupService setupService,
                       IUserStore<IdentityUser> userStore,
+                      SignInManager<IdentityUser> signInManager,
                       UserManager<IdentityUser> userManager)
     {
         _setupService = setupService;
         _userStore = userStore;
         _userEmailStore = (IUserEmailStore<IdentityUser>) _userStore;
         _userManager = userManager;
+        _signInManager = signInManager;
     }
 
     public IActionResult OnGet()
@@ -53,6 +56,17 @@ public class SetupModel : PageModel
             goto fail;
 
         _setupService.IsFirstTime = false;
+
+        /* explicitly sign in the user after creation */
+        var signInResult = await _signInManager.PasswordSignInAsync(Input.Email,
+                                                                    Input.Password,
+                                                                    true,
+                                                                    lockoutOnFailure: false);
+
+        if (signInResult.Succeeded)
+        {
+            return LocalRedirect("~/");
+        }
 
         return RedirectToPage("/");
     fail:

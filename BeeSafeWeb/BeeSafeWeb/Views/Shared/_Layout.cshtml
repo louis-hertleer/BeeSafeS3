@@ -27,31 +27,34 @@
         </svg>
     </button>
 
-    <!-- Navigation Links (Hidden on Small Screens) -->
-    <div id="navLinks" class="hidden absolute top-16 left-0 w-full bg-slate-700 md:static md:flex md:flex-row md:space-x-4 md:bg-transparent rounded-b-lg md:rounded-none border-t border-gray-600 md:border-none transition-all duration-300 ease-in-out md:w-auto">
-        <div class="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center">
-            @if (User.Identity.IsAuthenticated)
-            {
-                <p><a asp-controller="Home" asp-action="Index" class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">Dashboard</a></p>
-                <p><a asp-controller="Approvals" asp-action="Index" class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">Show Pending Devices</a></p>
-                <p><a asp-controller="EditDevices" asp-action="Index" class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">Edit Devices</a></p>
-                <p><a asp-controller="Nest" asp-action="Index" class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">Nests</a></p>
+    @if (ViewData["Title"] as string != "Setup")
+    {
+        <!-- Navigation Links (Hidden on Small Screens) -->
+        <div id="navLinks" class="hidden absolute top-16 left-0 w-full bg-slate-700 md:static md:flex md:flex-row md:space-x-4 md:bg-transparent rounded-b-lg md:rounded-none border-t border-gray-600 md:border-none transition-all duration-300 ease-in-out md:w-auto">
+            <div class="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center">
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <p><a asp-controller="Home" asp-action="Index" class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">Dashboard</a></p>
+                    <p><a asp-controller="Approvals" asp-action="Index" class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">Show Pending Devices</a></p>
+                    <p><a asp-controller="EditDevices" asp-action="Index" class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">Edit Devices</a></p>
+                    <p><a asp-controller="Nest" asp-action="Index" class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">Nests</a></p>
 
-            <!-- Logout button -->
-            <form class="block text-center md:inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                <button type="submit" class="nav-link btn btn-link text-white dark:text-gray-300 dark:hover:text-yellow-500 hover:bg-gray-600 px-6 py-2 transition-colors rounded-md">
-                    Logout
-                </button>
-            </form>
-            }
-            else
-            {
-            <a asp-area="Identity" asp-page="/Account/Login" class="block text-center md:inline text-white dark:text-gray-300 dark:hover:bg-yellow-500 hover:bg-gray-600 px-6 py-2 transition-colors rounded-md">
-                Login
-            </a>
-            }
+                    <!-- Logout button -->
+                    <form class="block text-center md:inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                        <button type="submit" class="nav-link btn btn-link text-white dark:text-gray-300 dark:hover:text-yellow-500 hover:bg-gray-600 px-6 py-2 transition-colors rounded-md">
+                            Logout
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-area="Identity" asp-page="/Account/Login" class="block text-center md:inline text-white dark:text-gray-300 dark:hover:bg-yellow-500 hover:bg-gray-600 px-6 py-2 transition-colors rounded-md">
+                        Login
+                    </a>
+                }
+            </div>
         </div>
-    </div>
+    }
 </nav>
 
 <!-- Responsive Menu Toggle Script -->
