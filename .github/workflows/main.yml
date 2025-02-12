@@ -3,7 +3,6 @@ name: Deploy to Azure
   push:
     branches:
       - main
-      - test
   # Run full pipeline on push to main
 jobs:
   # Build the Docker image and push it to DockerHub
