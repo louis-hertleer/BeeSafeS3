@@ -8,6 +8,7 @@
 <table class="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md text-sm sm:text-lg">
     <thead class="bg-gray-200 dark:bg-gray-700 text-center">
     <tr>
+        <th class="py-3 px-4 border">Name</th>
         <th class="py-3 px-4 border">Latitude</th>
         <th class="py-3 px-4 border">Longitude</th>
         <th class="py-3 px-4 border">Direction</th>
@@ -18,6 +19,12 @@
     @foreach (var device in devices)
     {
             <tr class="text-center border-t">
+                <td class=" px-4">
+                    <input id="name-@device.Id"
+                           name="Name"
+                           class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
+                           value="@device.Name">
+                </td>
                 <td class=" px-4">
                     <input id="latitude-@device.Id"
                            name="Latitude"
@@ -41,11 +48,12 @@
                                 onclick="openModal('@device.Id')">
                             Set Location
                         </button>
-                        <form id="approval-form-@device.Id" asp-action="Update" method="post" asp-route-id="@device.Id">
+                        <form id="approval-form-@device.Id" asp-action="Update" method="post" asp-route-id="@device.Id" onsubmit="formOnSubmit('@device.Id')">
                             <input type="hidden" name="id" value="@device.Id">
-                            <input type="hidden" id="form-latitude-@device.Id" name="latitude">
-                            <input type="hidden" id="form-longitude-@device.Id" name="longitude">
-                            <input type="hidden" id="form-direction-@device.Id" name="direction">
+                            <input type="hidden" id="form-name-@device.Id" name="name" value="@device.Name">
+                            <input type="hidden" id="form-latitude-@device.Id" name="latitude" value="@device.Latitude">
+                            <input type="hidden" id="form-longitude-@device.Id" name="longitude" value="@device.Longitude">
+                            <input type="hidden" id="form-direction-@device.Id" name="direction" value="@device.Direction">
                             <button type="submit" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 transition duration-200">
                                 Save Changes
                             </button>
@@ -89,4 +97,13 @@
 @section Scripts
 {
     <script src="~/js/device.js"></script>
+    <script>
+        function formOnSubmit(id) {
+            console.log("loading...")
+            document.getElementById(`form-name-${id}`).value = document.getElementById(`name-${id}`).value;
+            document.getElementById(`form-latitude-${id}`).value = document.getElementById(`latitude-${id}`).value;
+            document.getElementById(`form-longitude-${id}`).value = document.getElementById(`longitude-${id}`).value;
+            document.getElementById(`form-direction-${id}`).value = document.getElementById(`direction-${id}`).value;
+        }
+    </script>
 }
