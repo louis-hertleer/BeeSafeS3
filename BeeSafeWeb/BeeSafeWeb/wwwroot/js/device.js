@@ -195,11 +195,13 @@ function handleKeyPress(event) {
 }
 
 function confirmLocation() {
+    const name = document.getElementById(`name-${selectedDeviceId}`).value;
     const lat = parseFloat(document.getElementById(`latitude-${selectedDeviceId}`).value);
     const lng = parseFloat(document.getElementById(`longitude-${selectedDeviceId}`).value);
     const direction = parseFloat(document.getElementById(`direction-${selectedDeviceId}`).value);
 
     if (!isNaN(lat) && !isNaN(lng) && !isNaN(direction)) {
+        document.getElementById(`form-name-${selectedDeviceId}`).value = name;
         document.getElementById(`form-latitude-${selectedDeviceId}`).value = lat.toFixed(6);
         document.getElementById(`form-longitude-${selectedDeviceId}`).value = lng.toFixed(6);
         document.getElementById(`form-direction-${selectedDeviceId}`).value = direction.toFixed(2);

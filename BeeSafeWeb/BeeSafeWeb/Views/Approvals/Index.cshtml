@@ -23,7 +23,7 @@ List<Device> devices = Model;
         <table class="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md text-sm sm:text-lg">
             <thead class="bg-gray-200 dark:bg-gray-700 text-center">
             <tr>
-                <th class="py-3 px-4 border">Last Active</th>
+                <th class="py-3 px-4 border">Name</th>
                 <th class="py-3 px-4 border">Latitude</th>
                 <th class="py-3 px-4 border">Longitude</th>
                 <th class="py-3 px-4 border">Direction</th>
@@ -34,7 +34,11 @@ List<Device> devices = Model;
             @foreach (var device in devices)
             {
                 <tr class="text-center border-t">
-                    <td class="py-3 px-4">@device.LastActive.ToString("d/M/yyyy HH:mm")</td>
+                    <td class=" px-4">
+                        <input id="name-@device.Id"
+                               class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
+                               value="@device.Name">
+                    </td>
                     <td class=" px-4">
                         <input id="latitude-@device.Id"
                                class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
@@ -59,6 +63,7 @@ List<Device> devices = Model;
 
                             <form id="approval-form-@device.Id" class="hidden flex" method="post" action="@Url.Action("ApproveDevice", "Approvals")">
                                 <input type="hidden" name="id" value="@device.Id">
+                                <input type="hidden" id="form-name-@device.Id" name="name">
                                 <input type="hidden" id="form-latitude-@device.Id" name="latitude">
                                 <input type="hidden" id="form-longitude-@device.Id" name="longitude">
                                 <input type="hidden" id="form-direction-@device.Id" name="direction">

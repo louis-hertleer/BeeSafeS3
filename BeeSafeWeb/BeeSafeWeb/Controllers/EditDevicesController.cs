@@ -19,9 +19,11 @@ public class EditDevicesController : Controller
     public async Task<IActionResult> Index()
     {
         var devices = await _deviceRepository.GetQueryable()
+            .Where(d => d.IsApproved && !d.IsDeclined)
             .Select(d => new
             {
                 d.Id,
+                d.Name,
                 d.Latitude,
                 d.Longitude,
                 d.Direction,
@@ -47,6 +49,10 @@ public class EditDevicesController : Controller
             return NotFound();
         }
 
+        if (device.Name != model.Name && model.Name != null)
+        {
+            device.Name = model.Name;
+        }
         device.Latitude = model.Latitude;
         device.Longitude = model.Longitude;
         device.Direction = model.Direction;

@@ -62,7 +62,7 @@ public class Device
     public List<DetectionEvent> DetectionEvents { get; set; }
 
 
-    public string? Name { get; set; }
+    public string Name { get; set; }
     public double? ManualHornetDirection { get; set; }
     public bool IsManualDirectionSet { get; set; }
 
