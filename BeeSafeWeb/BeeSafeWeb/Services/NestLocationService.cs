@@ -39,51 +39,58 @@ namespace BeeSafeWeb.Services
             _nestEstimateRepository = nestEstimateRepository;
         }
 
-        public async Task<List<NestEstimate>> CalculateAndPersistNestLocationsAsync()
-        {
-            Debug.WriteLine("Starting CalculateAndPersistNestLocationsAsync.");
-            var aggregatedEstimates = await CalculateNestLocationsAsync();
-            Debug.WriteLine($"Aggregated estimates count: {aggregatedEstimates.Count}");
+   public async Task<List<NestEstimate>> CalculateAndPersistNestLocationsAsync()
+{
+    Debug.WriteLine("Starting CalculateAndPersistNestLocationsAsync.");
 
-            if (aggregatedEstimates.Count == 0)
-            {
-                Debug.WriteLine("No aggregated nest estimates were calculated.");
-                return aggregatedEstimates;
-            }
+    // Step 1: Store existing nests before recalculating
+    var existingNests = await _nestEstimateRepository.GetQueryable().ToListAsync(); 
+    Debug.WriteLine($"Stored {existingNests.Count} existing nests.");
+
+    // Step 2: Calculate new nest locations
+    var newEstimates = await CalculateNestLocationsAsync();
+    Debug.WriteLine($"New nest estimates count: {newEstimates.Count}");
+
+    if (newEstimates.Count == 0)
+    {
+        Debug.WriteLine("No new nest estimates calculated.");
+        return newEstimates;
+    }
+
+    // Step 3: Match new estimates with existing nests
+    foreach (var newEstimate in newEstimates)
+    {
+        // Find a nearby existing nest (even if KnownHornet is NULL)
+        var matchingExistingNest = existingNests.FirstOrDefault(n =>
+            GetDistanceInMeters(n.EstimatedLatitude, n.EstimatedLongitude, 
+                                newEstimate.EstimatedLatitude, newEstimate.EstimatedLongitude) < 50); // 50 meters threshold
+
+        if (matchingExistingNest != null)
+        {
+            Debug.WriteLine($"Matching existing nest found: {matchingExistingNest.Id}");
+
+            // Preserve existing destroyed status
+            bool wasDestroyed = matchingExistingNest.IsDestroyed;
+            newEstimate.IsDestroyed = wasDestroyed;
+
+            newEstimate.Id = matchingExistingNest.Id;
+
+            _nestEstimateRepository.Detach(matchingExistingNest);
             
-            foreach (var estimate in aggregatedEstimates)
-            {
-                if (estimate.KnownHornet == null)
-                {
-                    Debug.WriteLine("Skipping estimate with null KnownHornet.");
-                    continue;
-                }
-                
-                var hornetId = estimate.KnownHornet.Id;
-                Debug.WriteLine($"Processing nest estimate for hornet Id: {hornetId}");
-                var existing = await _nestEstimateRepository.GetQueryable()
-                    .FirstOrDefaultAsync(n => n.KnownHornet != null && n.KnownHornet.Id == hornetId);
-                if (existing != null)
-                {
-                    Debug.WriteLine($"Updating existing nest estimate for hornet Id: {hornetId}");
-                    bool preservedIsDestroyed = existing.IsDestroyed;
-                    existing.EstimatedLatitude = estimate.EstimatedLatitude;
-                    existing.EstimatedLongitude = estimate.EstimatedLongitude;
-                    existing.DisplayAccuracy = estimate.DisplayAccuracy;
-                    existing.Direction = estimate.Direction;
-                    existing.IsDestroyed = preservedIsDestroyed;
-                    await _nestEstimateRepository.UpdateAsync(existing);
-                    estimate.Id = existing.Id;
-                }
-                else
-                {
-                    Debug.WriteLine($"Adding new nest estimate for hornet Id: {hornetId}");
-                    await _nestEstimateRepository.AddAsync(estimate);
-                }
-            }
-            Debug.WriteLine("Finished persisting nest estimates.");
-            return aggregatedEstimates;
+            await _nestEstimateRepository.UpdateAsync(newEstimate);
         }
+
+        else
+        {
+            Debug.WriteLine($"No match found, adding new nest estimate: {newEstimate.Id}");
+            await _nestEstimateRepository.AddAsync(newEstimate);
+        }
+    }
+
+    Debug.WriteLine("Finished updating nest estimates.");
+    return newEstimates;
+}
+
         
         private double GetDistanceInMeters(double lat1, double lon1, double lat2, double lon2)
         {

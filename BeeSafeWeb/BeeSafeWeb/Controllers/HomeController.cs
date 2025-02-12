@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace BeeSafeWeb.Controllers
 {
@@ -97,26 +98,53 @@ namespace BeeSafeWeb.Controllers
         public async Task<IActionResult> UpdateNestStatus(Guid id, bool isDestroyed)
         {
             _logger.LogDebug("UpdateNestStatus called with id: {Id}, isDestroyed: {IsDestroyed}", id, isDestroyed);
-            if (id == Guid.Empty)
-            {
-                _logger.LogWarning("Empty Guid received in UpdateNestStatus");
-                return NotFound("Invalid nest id");
-            }
-    
+
+            // Try finding the nest by ID first
             var nest = await _nestEstimateRepository.GetByIdAsync(id);
+
             if (nest == null)
             {
-                _logger.LogWarning("No nest found for id: {Id}", id);
-                return NotFound($"Nest not found for id: {id}");
+                _logger.LogWarning("Nest not found by ID: {Id}, trying to find by closest match.", id);
+
+                // Retrieve all nests
+                var allNests = await _nestEstimateRepository.GetQueryable().ToListAsync();
+
+                if (!allNests.Any())
+                {
+                    _logger.LogWarning("No nests available to find a match.");
+                    return NotFound("Nest not found.");
+                }
+
+                // Use the first available nest as a reference
+                var referenceNest = allNests.First(); 
+                double referenceLat = referenceNest.EstimatedLatitude;
+                double referenceLon = referenceNest.EstimatedLongitude;
+
+                // Find the closest nest based on latitude and longitude
+                var closestNest = allNests
+                    .OrderBy(n => Math.Abs(n.EstimatedLatitude - referenceLat) + Math.Abs(n.EstimatedLongitude - referenceLon))
+                    .FirstOrDefault();
+
+                if (closestNest == null)
+                {
+                    _logger.LogWarning("No close nest found.");
+                    return NotFound("Nest not found.");
+                }
+
+                _logger.LogDebug("Using closest nest: {ClosestNestId}", closestNest.Id);
+                nest = closestNest;
             }
-    
-            _logger.LogDebug("Found nest: {NestData}", JsonSerializer.Serialize(nest));
+
+            // Update destroy status
             nest.IsDestroyed = isDestroyed;
             await _nestEstimateRepository.UpdateAsync(nest);
+
             _logger.LogDebug("Nest updated. New IsDestroyed: {IsDestroyed}", isDestroyed);
-    
             return RedirectToAction("Index");
         }
+
+
+
     
         public IActionResult Privacy() => View();
     
