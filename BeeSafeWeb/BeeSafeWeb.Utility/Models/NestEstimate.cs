@@ -22,9 +22,6 @@ public class NestEstimate
     public double? DisplayLongitude { get; set; }
     public double? DisplayAccuracy { get; set; }
 
-    // for manually adding the direction the hornet flies in 
-    public double? ManualHornetDirection { get; set; }
-
-
+    public double Direction { get; set; }
 
 }

@@ -13,6 +13,16 @@ public class DetectionEvent
     public DateTime SecondDetection { get; set; }
     
     /// <summary>
+    /// Gets or sets a value indicating whether this detection was manually added.
+    /// </summary>
+    public bool IsManual { get; set; }
+        
+    /// <summary>
+    /// Gets or sets the number of hornets detected (for manual detections).
+    /// </summary>
+    public int HornetCount { get; set; }
+    
+    /// <summary>
     /// The device to which this detection event belongs.
     /// </summary>
     public Device? Device { get; set; }

@@ -1,8 +1,11 @@
-﻿@{
-ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<dynamic>
+
+@{
+Layout = "_Layout";
+IEnumerable<dynamic> detections = Model;
 var devices = ViewData["Devices"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
-// The nestEstimates array contains both active and destroyed nests.
 var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+ViewData["Title"] = "Home Page";
 }
 
 <div class="container mx-auto mt-10 dark:bg-gray-900">
@@ -23,7 +26,6 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
                 <h3 class="text-2xl font-bold flex items-center dark:text-yellow-400">
                     <span class="mr-2">🐝</span> Hornet Nest Info
                 </h3>
-                <!-- Toggle Switch for Filtering -->
                 <div id="nest-filter" class="mt-2 flex items-center">
                     <div class="relative inline-block w-11 h-5">
                         <input id="showDestroyedToggle" type="checkbox" class="peer appearance-none w-11 h-5 bg-gray-900 rounded-full checked:bg-yellow-500 cursor-pointer transition-colors duration-300" />
@@ -43,7 +45,6 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
                 <p id="status-label" class="text-gray-700 dark:text-gray-300 mt-2 hidden">
                     ⚠ Status: <b id="status"></b>
                 </p>
-                <!-- Update Form -->
                 <div id="nest-status-buttons" class="mt-4 hidden">
                     <form id="nest-status-form" method="post" action="@Url.Action("UpdateNestStatus", "Home")">
                         @Html.AntiForgeryToken()
@@ -90,9 +91,17 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
 
 @section Scripts {
 <script>
-    var selectedNestId = null; // Global variable for the selected nest id
+    console.log("Initializing map and markers...");
 
-    // Initialize the map.
+    // Icon for device marker.
+    var cameraIcon = L.icon({
+        iconUrl: '/assets/photo-camera.svg',
+        iconSize: [30, 30],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -35]
+    });
+
+    var selectedNestId = null;
     var map = L.map('map');
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -100,36 +109,32 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
     }).addTo(map);
 
     var deviceBounds = [];
-
-    // Device data from the backend.
     var devices = [
-        @foreach (var device in devices)
+        @foreach (var device in devices.Select((d, index) => new { d, index }))
         {
-        <text>,{
-            lat: @device.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            lng: @device.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            id: '@device.Id',
-            isOnline: @(device.IsOnline ? "true" : "false"),
-            isTracking: @(device.IsTracking ? "true" : "false"),
-            lastActive: '@device.LastActiveString'
-        },</text>
+        var separator = device.index == 0 ? "" : ",";
+        <text>@separator{
+            lat: @device.d.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            lng: @device.d.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            id: '@device.d.Id',
+            isOnline: @(device.d.IsOnline ? "true" : "false"),
+            isTracking: @(device.d.IsTracking ? "true" : "false"),
+            lastActive: '@device.d.LastActiveString',
+            name: '@device.d.Name',
+            Direction: @device.d.Direction.ToString(System.Globalization.CultureInfo.InvariantCulture)
+        }</text>
         }
     ];
 
     devices.forEach(function(device) {
         if (device.lat && device.lng) {
-            var markerColor = device.isOnline === "true" ? "blue" : "gray";
-            var deviceMarker = L.marker([device.lat, device.lng])
+            var marker = L.marker([device.lat, device.lng], { icon: cameraIcon })
                 .addTo(map)
-                .bindPopup(`
-                        <b>Device Info</b><br>
-                        Status: ${device.isOnline === "true" ? 'Online' : 'Offline'}<br>
-                        Mode: ${device.isTracking === "true" ? 'Tracking' : 'Defence'}<br>
-                        Last Active: ${device.lastActive}
-                    `);
+                .bindPopup(`<b>${device.name}</b><br>Last Active: ${device.lastActive}`);
             deviceBounds.push([device.lat, device.lng]);
 
-            deviceMarker.on('click', function () {
+            marker.on('click', function () {
+                console.log("Device marker clicked:", device);
                 document.getElementById('device-status').innerText = device.isOnline === "true" ? 'Online' : 'Offline';
                 document.getElementById('device-mode').innerText = device.isTracking === "true" ? 'Tracking' : 'Defence';
                 document.getElementById('device-last-active').innerText = device.lastActive;
@@ -151,25 +156,25 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
         map.setView([51.168300, 4.980980], 10);
     }
 
-    // Nest estimates array from the backend.
     var nestEstimates = [
-        @foreach (var nest in (IEnumerable<dynamic>)ViewData["NestEstimates"])
+        @foreach (var nest in ((IEnumerable<dynamic>)ViewData["NestEstimates"]).Select((n, index) => new { n, index }))
         {
-        <text>,{
-            id: '@nest.id',
-            lat: @nest.lat.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            lng: @nest.lng.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            radius: @nest.radius.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            timestamp: '@nest.LastUpdatedString',
-            IsDestroyed: @(nest.IsDestroyed ? 1 : 0)
-        },</text>
+        var separator = nest.index == 0 ? "" : ",";
+        <text>@separator{
+            id: '@nest.n.id',
+            lat: @nest.n.lat.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            lng: @nest.n.lng.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            radius: @nest.n.radius.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            timestamp: '@nest.n.LastUpdatedString',
+            IsDestroyed: @(nest.n.IsDestroyed ? 1 : 0)
+        }</text>
         }
     ];
 
-    // Global array to hold nest circles on the map.
     var nestCircles = [];
 
     function clearNestCircles() {
+        console.log("Clearing nest circles...");
         nestCircles.forEach(function(circle) {
             map.removeLayer(circle);
         });
@@ -177,12 +182,12 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
     }
 
     function renderNestCircles() {
+        console.log("Rendering nest circles...");
         clearNestCircles();
-        // Get the filter setting from the toggle.
         var showDestroyed = document.getElementById('showDestroyedToggle').checked;
         nestEstimates.forEach(function(nest) {
-            // If the toggle is off and this nest is destroyed, skip rendering.
             if (!showDestroyed && nest.IsDestroyed === 1) {
+                console.log("Skipping destroyed nest:", nest);
                 return;
             }
             var circleColor = nest.IsDestroyed === 1 ? "green" : "red";
@@ -195,13 +200,18 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
             }).addTo(map).bindPopup(`Accuracy: ${parseFloat(nest.radius).toFixed(2)}m`);
 
             circle.on('click', function () {
+                console.log("Nest circle clicked:", nest);
                 selectedNestId = nest.id;
                 document.getElementById('accuracy').innerText = parseFloat(nest.radius).toFixed(2);
                 document.getElementById('timestamp').innerText = nest.timestamp;
-                document.getElementById('status').innerText = nest.IsDestroyed === 1 ? "Destroyed" : "Active";
+                document.getElementById('status').innerText = (nest.IsDestroyed == 1) ? "Destroyed" : "Active";
                 document.getElementById('id').value = nest.id;
-                var newStatus = (nest.IsDestroyed === 1) ? false : true;
-                document.getElementById('isDestroyed').value = newStatus;
+
+                // Convert numeric status to boolean and toggle it.
+                var isCurrentlyDestroyed = (nest.IsDestroyed == 1);
+                var newStatus = !isCurrentlyDestroyed;
+                document.getElementById('isDestroyed').value = newStatus.toString();
+
                 var toggleBtn = document.getElementById('toggle-status-btn');
                 toggleBtn.innerText = newStatus ? "Mark as Destroyed" : "Mark as Active";
                 document.getElementById('default-message').style.display = 'none';
@@ -214,16 +224,15 @@ var nestEstimates = ViewData["NestEstimates"] as IEnumerable<dynamic> ?? Enumera
         });
     }
 
-    // When the toggle is changed, re-render the nest circles.
     document.getElementById('showDestroyedToggle').addEventListener('change', function () {
+        console.log("Toggle changed. Re-rendering nest circles...");
         renderNestCircles();
     });
 
-    // Initially render nest circles.
     renderNestCircles();
 
     document.getElementById('nest-status-form').addEventListener('submit', function (e) {
-        // Form submission; no logging here.
+        console.log("Nest status form submitted.");
     });
 </script>
 }
