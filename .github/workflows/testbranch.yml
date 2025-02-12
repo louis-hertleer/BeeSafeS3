@@ -2,7 +2,7 @@ name: Deploy to Azure (Testing)
 'on':
   push:
     branches:
-      - test
+      - main
   # Run on push to testing Branch
 jobs:
   # Build the Docker image and push it to DockerHub
@@ -41,9 +41,7 @@ jobs:
           SERVER_EXISTS=$(az mysql flexible-server show --name
           beesafe-mysql-testserver --resource-group BeeSafe --query "name" -o tsv ||
           echo "")
-
           echo "Server Exists: $SERVER_EXISTS"
-          
           if [[ -n "$SERVER_EXISTS" ]]; then
             echo "MySQL server already exists, skipping creation."
           else
@@ -117,7 +115,7 @@ jobs:
               --target-port 8080 \
               --env-vars ConnectionStrings__DefaultConnection="Server=tcp:dbbeesafe.database.windows.net,1433;Initial Catalog=beesafe;Persist Security Info=False;User ID=${{ secrets.MYSQL_USER }};Password=${{ secrets.MYSQL_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" \
               --ingress external \
-              --environment testcaebeesafe 
+              --environment caebeesafe 
           # Create container app by pulling docker image from DockerHub, open port 8080 for application, add connection string for connection with database, ingress external to make it publicly available
 
       - name: Get Domain Name and Save to ENV # Get domain name from application app, save it to variable for later DAST testing

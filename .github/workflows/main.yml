@@ -41,6 +41,7 @@ jobs:
         run: |
           SERVER_EXISTS=$(az sql server show --name dbbeesafe --resource-group BeeSafe --query "name" -o tsv || echo "")
           echo "Server Exists: $SERVER_EXISTS"
+          
           if [[ -n "$SERVER_EXISTS" ]]; then
             echo "SQL server already exists, skipping creation."
           else
@@ -50,7 +51,7 @@ jobs:
               --resource-group BeeSafe \
               --location uksouth \
               --admin-user ${{ secrets.SQL_USER }} \
-              --admin-password ${{ secrets.SQL_PASSWORD }} \
+              --admin-password ${{ secrets.SQL_PASSWORD }}
           fi
 
       - name: Check if SQL Database exists # Database to store application data
@@ -59,7 +60,6 @@ jobs:
           --server dbbeesafe \
           --resource-group BeeSafe \
           --query "[?name=='beesafe']" -o tsv)
-    
           if [[ -z "$DB_EXISTS" ]]; then
             echo "Database 'beesafe' does not exist. Creating the database..."
             az sql db create \
@@ -80,7 +80,6 @@ jobs:
             --resource-group $RESOURCE_GROUP \
             --query "name" \
             --output tsv || echo "none")
-
           if [ "$EXISTING_ENV" = "none" ]; then
             echo "Environment does not exist. Creating..."
             az containerapp env create \
