@@ -2,11 +2,12 @@ using BeeSafeWeb.Data;
 
 namespace BeeSafeWeb.Services;
 
-/* This class wraps the functionality of checking if there are no users in the
- * database. The reason for this is that it needs to make a query to check if
- * there are users in the database, but it would be silly to check whether there
- * are users every single request, hence this class.
- */
+/// <summary>
+/// This class wraps the functionality of checking if there are no users in the
+/// database. The reason for this is that it needs to make a query to check if
+/// there are users in the database, but it would be silly to check whether there
+/// are users every single request, hence this class.
+/// </summary>
 public class SetupService(IServiceProvider serviceProvider)
 {
     private bool _hasBeenRun = false;
