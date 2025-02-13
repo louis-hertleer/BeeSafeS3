@@ -13,4 +13,5 @@ public interface IRepository<T>
     Task UpdateAsync(T entity);
     Task DeleteAsync(Guid id);
     IQueryable<T> GetQueryable();
+    void Detach(T entity);
 }

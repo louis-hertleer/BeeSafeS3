@@ -90,7 +90,9 @@ namespace BeeSafeWeb.Data
                     FirstDetection = now.AddMinutes(-15),
                     SecondDetection = now.AddMinutes(-10),
                     Device = devices[0],
-                    KnownHornet = knownHornets[0]
+                    KnownHornet = knownHornets[0],
+                    HornetCount = 1
+
                 },
                 new DetectionEvent
                 {
@@ -100,7 +102,9 @@ namespace BeeSafeWeb.Data
                     FirstDetection = now.AddMinutes(-14),
                     SecondDetection = now.AddMinutes(-9),
                     Device = devices[1],
-                    KnownHornet = knownHornets[0]
+                    KnownHornet = knownHornets[0],
+                    HornetCount = 1
+
                 },
                 // For knownHornet 2:
                 new DetectionEvent
@@ -111,7 +115,9 @@ namespace BeeSafeWeb.Data
                     FirstDetection = now.AddMinutes(-13),
                     SecondDetection = now.AddMinutes(-8),
                     Device = devices[1],
-                    KnownHornet = knownHornets[1]
+                    KnownHornet = knownHornets[1],
+                    HornetCount = 1
+
                 },
                 new DetectionEvent
                 {
@@ -121,7 +127,9 @@ namespace BeeSafeWeb.Data
                     FirstDetection = now.AddMinutes(-12),
                     SecondDetection = now.AddMinutes(-7),
                     Device = devices[2],
-                    KnownHornet = knownHornets[1]
+                    KnownHornet = knownHornets[1],
+                    HornetCount = 1
+
                 },
                 // For knownHornet 3:
                 new DetectionEvent
@@ -132,7 +140,9 @@ namespace BeeSafeWeb.Data
                     FirstDetection = now.AddMinutes(-15),
                     SecondDetection = now.AddMinutes(-10),
                     Device = devices[2],
-                    KnownHornet = knownHornets[2]
+                    KnownHornet = knownHornets[2],
+                    HornetCount = 1
+
                 },
                 new DetectionEvent
                 {
@@ -142,7 +152,9 @@ namespace BeeSafeWeb.Data
                     FirstDetection = now.AddMinutes(-14),
                     SecondDetection = now.AddMinutes(-9),
                     Device = devices[0],
-                    KnownHornet = knownHornets[2]
+                    KnownHornet = knownHornets[2],
+                    HornetCount = 1
+
                 },
                 // For knownHornet 4:
                 new DetectionEvent
@@ -153,7 +165,9 @@ namespace BeeSafeWeb.Data
                     FirstDetection = now.AddMinutes(-10),
                     SecondDetection = now.AddMinutes(-5),
                     Device = devices[0],
-                    KnownHornet = knownHornets[3]
+                    KnownHornet = knownHornets[3],
+                    HornetCount = 1
+
                 },
                 new DetectionEvent
                 {
@@ -163,7 +177,9 @@ namespace BeeSafeWeb.Data
                     FirstDetection = now.AddMinutes(-9),
                     SecondDetection = now.AddMinutes(-4),
                     Device = devices[1],
-                    KnownHornet = knownHornets[3]
+                    KnownHornet = knownHornets[3],
+                    HornetCount = 1
+
                 },
                 // Additional detection event with null KnownHornet (will be ignored)
                 new DetectionEvent
@@ -174,7 +190,9 @@ namespace BeeSafeWeb.Data
                     FirstDetection = now.AddMinutes(-10),
                     SecondDetection = now.AddMinutes(-5),
                     Device = devices[0],
-                    KnownHornet = null
+                    KnownHornet = null,
+                    HornetCount = 1
+
                 }
             };
 
@@ -190,7 +208,9 @@ namespace BeeSafeWeb.Data
                     FirstDetection = now.AddMinutes(-16 - i),
                     SecondDetection = now.AddMinutes(-11 - i),
                     Device = devices[i % devices.Count],
-                    KnownHornet = knownHornets[0]
+                    KnownHornet = knownHornets[0],
+                    HornetCount = 1
+
                 });
             }
 
@@ -205,7 +225,8 @@ namespace BeeSafeWeb.Data
                     FirstDetection = now.AddMinutes(-14 - i),
                     SecondDetection = now.AddMinutes(-9 - i),
                     Device = devices[i % devices.Count],
-                    KnownHornet = knownHornets[1]
+                    KnownHornet = knownHornets[1],
+                    HornetCount = 1
                 });
             }
 
@@ -220,7 +241,9 @@ namespace BeeSafeWeb.Data
                     FirstDetection = now.AddMinutes(-15 - i),
                     SecondDetection = now.AddMinutes(-10 - i),
                     Device = devices[i % devices.Count],
-                    KnownHornet = knownHornets[2]
+                    KnownHornet = knownHornets[2],
+                    HornetCount = 1
+
                 });
             }
 
@@ -235,7 +258,9 @@ namespace BeeSafeWeb.Data
                     FirstDetection = now.AddMinutes(-11 - i),
                     SecondDetection = now.AddMinutes(-6 - i),
                     Device = devices[i % devices.Count],
-                    KnownHornet = knownHornets[3]
+                    KnownHornet = knownHornets[3],
+                    HornetCount = 1
+
                 });
             }
 
