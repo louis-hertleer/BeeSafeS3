@@ -50,7 +50,7 @@ namespace BeeSafeWeb.Controllers
                 return NotFound();
             }
 
-            if (device.Name.Length > 1)
+            if (model.Name != null && model.Name.Length > 1)
             {
                 device.Name = model.Name;
             }
