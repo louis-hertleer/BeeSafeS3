@@ -50,6 +50,10 @@ namespace BeeSafeWeb.Controllers
                 return NotFound();
             }
 
+            if (device.Name.Length > 1)
+            {
+                device.Name = model.Name;
+            }
             device.Latitude = model.Latitude;
             device.Longitude = model.Longitude;
             device.Direction = model.Direction;
@@ -79,6 +83,7 @@ namespace BeeSafeWeb.Controllers
         public class DeviceApprovalModel
         {
             public Guid Id { get; set; }
+            public string? Name { get; set; }
             public double Latitude { get; set; }
             public double Longitude { get; set; }
             public double Direction { get; set; }

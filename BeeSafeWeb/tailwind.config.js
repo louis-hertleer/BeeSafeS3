@@ -4,6 +4,7 @@ module.exports = {
     './BeeSafeWeb/Pages/**/*.cshtml',
     './BeeSafeWeb/Views/**/*.cshtml',
     './BeeSafeWeb/wwwroot/**/*.html',
+    './BeeSafeWeb/Areas/**/*.cshtml',
   ],
   theme: {
     extend: {},
