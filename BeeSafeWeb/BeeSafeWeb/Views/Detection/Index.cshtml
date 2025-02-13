@@ -40,13 +40,13 @@
         let position = [[51.168300, 4.980980], 14];
         
         let sPosition = localStorage.getItem('position');
-        /* L javascript */
-        @*if (sPosition !== null || sPosition !== undefined)
+         
+        if (sPosition !== null || sPosition !== undefined)
         {
             position = JSON.parse(sPosition);
         }
         
-        debugger;*@
+    
         
         let map = L.map('map').setView(position[0], position[1]);
         
