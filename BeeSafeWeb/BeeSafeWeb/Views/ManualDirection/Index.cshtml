@@ -62,9 +62,6 @@
                     <td class="border p-2 text-center">@detection.HornetCount</td>
                     <td class="border p-2 text-center">@detection.SecondDetection.ToString("g")</td>
                     <td class="border p-2 text-center">
-                        <a asp-controller="ManualDirection" asp-action="Edit" asp-route-id="@detection.Id" class="bg-blue-500 text-white px-3 py-1 rounded">
-                            Edit
-                        </a>
                         <form asp-controller="ManualDirection" asp-action="Delete" asp-route-id="@detection.Id" method="post" class="inline-block ml-2" onsubmit="return confirm('Are you sure you want to delete this detection?');">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded">
