@@ -82,6 +82,9 @@ namespace BeeSafeWeb.Controllers
             device.LastActive = DateTime.UtcNow;
 
             await _deviceRepository.UpdateAsync(device);
+            
+            TempData["SuccessMessage"] = "Device updated successfully!";
+
             return RedirectToAction(nameof(Index));
         }
 

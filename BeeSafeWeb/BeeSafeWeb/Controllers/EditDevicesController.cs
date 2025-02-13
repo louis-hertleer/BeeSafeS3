@@ -59,19 +59,35 @@ namespace BeeSafeWeb.Controllers
             }
 
             // Read raw form values and force the correct decimal separator.
-            var latitudeStr = Request.Form["latitude"].ToString();
-            var longitudeStr = Request.Form["longitude"].ToString();
-            var directionStr = Request.Form["direction"].ToString();
+            var latitudeStr = Request.Form["latitude"].ToString().Replace(',', '.');
+            var longitudeStr = Request.Form["longitude"].ToString().Replace(',', '.');
+            var directionStr = Request.Form["direction"].ToString().Replace(',', '.');
 
-            if (!double.TryParse(latitudeStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double latitude))
+            double latitude, longitude, direction;
+
+            if (string.IsNullOrWhiteSpace(latitudeStr))
+            {
+                latitude = device.Latitude;
+            }
+            else if (!double.TryParse(latitudeStr, NumberStyles.Float, CultureInfo.InvariantCulture, out latitude))
             {
                 return BadRequest("Invalid latitude format.");
             }
-            if (!double.TryParse(longitudeStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double longitude))
+
+            if (string.IsNullOrWhiteSpace(longitudeStr))
+            {
+                longitude = device.Longitude;
+            }
+            else if (!double.TryParse(longitudeStr, NumberStyles.Float, CultureInfo.InvariantCulture, out longitude))
             {
                 return BadRequest("Invalid longitude format.");
             }
-            if (!double.TryParse(directionStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double direction))
+
+            if (string.IsNullOrWhiteSpace(directionStr))
+            {
+                direction = device.Direction;
+            }
+            else if (!double.TryParse(directionStr, NumberStyles.Float, CultureInfo.InvariantCulture, out direction))
             {
                 return BadRequest("Invalid direction format.");
             }
@@ -81,6 +97,10 @@ namespace BeeSafeWeb.Controllers
             device.Direction = direction;
 
             await _deviceRepository.UpdateAsync(device);
+
+            // Set a TempData flag/message for success
+            TempData["SuccessMessage"] = "Device updated successfully!";
+
             return RedirectToAction(nameof(Index));
         }
     }
