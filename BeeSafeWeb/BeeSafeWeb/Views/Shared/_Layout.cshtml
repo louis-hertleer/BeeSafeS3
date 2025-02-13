@@ -12,12 +12,10 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body class="dark:bg-gray-900 dark:text-white bg-gray-100 text-gray-900 transition-all duration-300">
-@if (ViewData["Title"] as string != "Log in")
-{
 <nav class="bg-slate-600 dark:bg-gray-800 dark:border-b dark:border-gray-700 text-white p-4 flex items-center shadow-md sticky top-0 z-50">
     <!-- Left Side: Title -->
     <p class="text-xl font-bold flex-1">
-        <a asp-controller="Visitor" asp-action="Index">'t Geels Bieke</a>
+        <a asp-controller="Visitor" asp-action="Index">BeeSafe</a>
     </p>
 
     <!-- Mobile Menu Button -->
@@ -36,6 +34,7 @@
                 {
                     <p><a asp-controller="Home" asp-action="Index" class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">Dashboard</a></p>
                     <p><a asp-controller="Approvals" asp-action="Index" class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">Show Pending Devices</a></p>
+                    <p><a asp-controller="PendingAccounts" asp-action="Index" class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">View Pending Accounts</a></p>
                     <p><a asp-controller="EditDevices" asp-action="Index" class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">Edit Devices</a></p>
                     <p><a asp-controller="Nest" asp-action="Index" class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">Nests</a></p>
 
@@ -48,9 +47,15 @@
                 }
                 else
                 {
-                    <a asp-area="Identity" asp-page="/Account/Login" class="block text-center md:inline text-white dark:text-gray-300 dark:hover:bg-yellow-500 hover:bg-gray-600 px-6 py-2 transition-colors rounded-md">
-                        Login
-                    </a>
+                    @if (ViewData["Title"] as string != "Setup")
+                    {
+                        <a asp-area="Identity" asp-page="/Account/Login" class="block text-center md:inline text-white dark:text-gray-300 dark:hover:bg-yellow-500 hover:bg-gray-600 px-6 py-2 transition-colors rounded-md">
+                            Login
+                        </a>
+                        <a asp-area="Identity" asp-page="/Account/Register" class="block text-center md:inline text-white dark:text-gray-300 dark:hover:bg-yellow-500 hover:bg-gray-600 px-6 py-2 transition-colors rounded-md">
+                            Register
+                        </a>
+                    }
                 }
             </div>
         </div>
@@ -64,8 +69,6 @@
         navLinks.classList.toggle('hidden');
     });
 </script>
-
-}
 
 <main class="container mx-auto p-6">
     @if (@ViewData["BigTitle"] != null)

@@ -33,7 +33,9 @@ ViewData["Title"] = "Log in";
                        required />
                 <span asp-validation-for="Input.Password" class="text-red-500 text-xs"></span>
             </div>
-
+            <div class="mb-4">
+                <a class="text-blue-400 underline" asp-area="Identity" asp-page="Register">Don't have an account? Request one!</a>
+            </div>
             <div class="flex items-center justify-between">
                 <button type="submit"
                         class="w-full py-3 bg-yellow-500 text-gray-900 font-semibold rounded-md 
