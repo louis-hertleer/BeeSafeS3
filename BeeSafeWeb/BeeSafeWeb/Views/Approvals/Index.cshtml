@@ -1,6 +1,6 @@
 @{
-ViewData["Title"] = "Show Pending Devices";
-List<Device> devices = Model;
+    ViewData["Title"] = "Show Pending Devices";
+    List<Device> devices = Model;
 }
 <div class="p-4">
     <div>
@@ -8,7 +8,7 @@ List<Device> devices = Model;
         <p class="text-center">
             @if (devices.Count > 0)
             {
-                <span>Here you can see the devices that are pending approval. Click "Set Location" view and select the location on the map.</span>
+                <span>Here you can see the devices that are pending approval. Click "Edit" to update the device location and details.</span>
             }
             else
             {
@@ -17,107 +17,119 @@ List<Device> devices = Model;
         </p>
     </div>
 
-    @if(devices.Count > 0)
+    @if (devices.Count > 0)
     {
-    <div class="overflow-x-auto mt-4">
-        <table class="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md text-sm sm:text-lg">
-            <thead class="bg-gray-200 dark:bg-gray-700 text-center">
-            <tr>
-                <th class="py-3 px-4 border">Name</th>
-                <th class="py-3 px-4 border">Latitude</th>
-                <th class="py-3 px-4 border">Longitude</th>
-                <th class="py-3 px-4 border">Direction</th>
-                <th class="py-3 px-4 border">Action</th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach (var device in devices)
-            {
-                <tr class="text-center border-t">
-                    <td class=" px-4">
-                        <input id="name-@device.Id"
-                               class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
-                               value="@device.Name">
-                    </td>
-                    <td class=" px-4">
-                        <input id="latitude-@device.Id"
-                               class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
-                               value="@device.Latitude">
-                    </td>
-                    <td class="py-3 px-4">
-                        <input id="longitude-@device.Id"
-                               class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
-                               value="@device.Longitude">
-                    </td>
-                    <td class="py-3 px-4">
-                        <input id="direction-@device.Id"
-                               class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
-                               value="@device.Direction">
-                    </td>
-                    <td class="py-3 px-4 text-center">
-                        <div class="flex flex-col sm:flex-row gap-2 justify-center items-center">
-                            <button class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition duration-200"
-                                    onclick="openModal('@device.Id')">
-                                Set Location
-                            </button>
-
-                            <form id="approval-form-@device.Id" class="hidden flex" method="post" action="@Url.Action("ApproveDevice", "Approvals")">
-                                <input type="hidden" name="id" value="@device.Id">
-                                <input type="hidden" id="form-name-@device.Id" name="name">
-                                <input type="hidden" id="form-latitude-@device.Id" name="latitude">
-                                <input type="hidden" id="form-longitude-@device.Id" name="longitude">
-                                <input type="hidden" id="form-direction-@device.Id" name="direction">
-                                <button type="submit" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 transition duration-200">
-                                    Approve
+        <div class="overflow-x-auto mt-4">
+            <table class="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md text-sm sm:text-lg">
+                <thead class="bg-gray-200 dark:bg-gray-700 text-center">
+                    <tr>
+                        <!-- Removed the Name column header -->
+                        <th class="py-3 px-4 border">Latitude</th>
+                        <th class="py-3 px-4 border">Longitude</th>
+                        <th class="py-3 px-4 border">Direction</th>
+                        <th class="py-3 px-4 border">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var device in devices)
+                    {
+                        <tr class="text-center border-t">
+                            <!-- Removed the Name cell -->
+                            <td class="px-4">
+                                <span id="latitude-@device.Id">@device.Latitude</span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span id="longitude-@device.Id">@device.Longitude</span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span id="direction-@device.Id">@device.Direction</span>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <!-- Pass device details via data attributes -->
+                                <button class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition duration-200"
+                                        onclick="openModal(this)"
+                                        data-id="@device.Id"
+                                        data-name="@device.Name"
+                                        data-lat="@device.Latitude"
+                                        data-lng="@device.Longitude"
+                                        data-dir="@device.Direction">
+                                    Set Device
                                 </button>
-                            </form>
-
-                            <form method="post" onsubmit="rejectDevice(event)" asp-action="RejectDevice" asp-controller="Approvals">
-                                <button type="submit" class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600 transition duration-200">
-                                    Decline
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-            }
-            </tbody>
-        </table>
-    </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 </div>
 
-<!-- Location Modal -->
-<div id="location-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-4xl shadow-lg relative w-full max-w-lg sm:max-w-2xl">
-        <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white text-center">Set Device Location</h2>
-
-        <!-- Search Bar -->
-        <div class="mb-4">
-            <input type="text" id="city-search" placeholder="Enter city name in Belgium"
-                   class="w-full p-4 border rounded-md dark:bg-gray-700 dark:text-white text-lg"
-                   onkeypress="handleKeyPress(event)">
-            <button onclick="searchCity()" class="mt-2 w-full sm:w-auto bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600">
-                Search
-            </button>
-        </div>
-
-        <!-- Map Container -->
-        <div id="map" class="w-full h-[60vh] sm:h-[50vh] border rounded-md shadow-md"></div>
-
-        <div class="mt-6 flex flex-col sm:flex-row gap-2 justify-between">
-            <button onclick="confirmLocation()" class="w-full sm:w-auto bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600">
-                Confirm Location
-            </button>
-            <button type="button" onclick="closeModal()" class="w-full sm:w-auto bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600">
-                Cancel
-            </button>
+<!-- Add Device Modal -->
+<div id="location-modal" class="fixed inset-0 z-50 bg-gray-800 bg-opacity-50 hidden overflow-y-auto">
+    <div class="min-h-screen flex items-center justify-center">
+        <div class="bg-gray-900 rounded-lg p-4 sm:p-6 w-11/12 max-w-md md:w-1/2 lg:w-1/3 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-xl font-bold mb-4 text-white">Edit Device</h2>
+            <!-- Search Field -->
+            <div class="mb-4">
+                <input type="text" id="city-search" placeholder="Enter city name in Belgium"
+                       class="w-full p-2 border border-gray-600 rounded-md bg-gray-800 text-white"
+                       onkeypress="handleKeyPress(event)" />
+                <button type="button" onclick="searchCity()"
+                        class="mt-2 w-full bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+                    Search
+                </button>
+            </div>
+            <!-- Map -->
+            <div id="map" class="w-full h-[300px] rounded mb-4"></div>
+            <!-- Form Fields -->
+            <form id="edit-device-form" method="post" action="@Url.Action("ApproveDevice", "Approvals")" onsubmit="return validateModalForm();">
+                <input type="hidden" name="id" id="modal-id" value="">
+                <!-- Name Field -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300" for="modal-name">Name</label>
+                    <div id="error-name" class="text-red-500 text-sm hidden">Name is required.</div>
+                    <input type="text" id="modal-name" name="name"
+                           class="mt-1 block w-full border border-gray-600 rounded-md bg-gray-800 text-white"
+                           oninput="document.getElementById('error-name').classList.add('hidden');" />
+                </div>
+                <!-- Latitude Field -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300" for="modal-latitude">Latitude</label>
+                    <div id="error-latitude" class="text-red-500 text-sm hidden">Latitude is required.</div>
+                    <input type="text" id="modal-latitude" name="latitude"
+                           class="mt-1 block w-full border border-gray-600 rounded-md bg-gray-800 text-white"
+                           oninput="document.getElementById('error-latitude').classList.add('hidden');" />
+                </div>
+                <!-- Longitude Field -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300" for="modal-longitude">Longitude</label>
+                    <div id="error-longitude" class="text-red-500 text-sm hidden">Longitude is required.</div>
+                    <input type="text" id="modal-longitude" name="longitude"
+                           class="mt-1 block w-full border border-gray-600 rounded-md bg-gray-800 text-white"
+                           oninput="document.getElementById('error-longitude').classList.add('hidden');" />
+                </div>
+                <!-- Direction Field -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300" for="modal-direction">Direction</label>
+                    <div id="error-direction" class="text-red-500 text-sm hidden">Direction is required.</div>
+                    <input type="text" id="modal-direction" name="direction"
+                           class="mt-1 block w-full border border-gray-600 rounded-md bg-gray-800 text-white"
+                           oninput="document.getElementById('error-direction').classList.add('hidden');" />
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" class="bg-gray-600 text-white px-4 py-2 rounded" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded">
+                        Confirm
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 
+
 @section Scripts {
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="~/js/device.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/device.js"></script>
 }

@@ -1,63 +1,87 @@
+using System.Globalization;
 using BeeSafeWeb.Data;
 using BeeSafeWeb.Utility.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace BeeSafeWeb.Controllers;
-
-[Authorize]
-public class EditDevicesController : Controller
+namespace BeeSafeWeb.Controllers
 {
-    private readonly IRepository<Device> _deviceRepository;
-
-    public EditDevicesController(IRepository<Device> deviceRepository)
+    [Authorize]
+    public class EditDevicesController : Controller
     {
-        _deviceRepository = deviceRepository;
-    }
+        private readonly IRepository<Device> _deviceRepository;
 
-    public async Task<IActionResult> Index()
-    {
-        var devices = await _deviceRepository.GetQueryable()
-            .Where(d => d.IsApproved && !d.IsDeclined)
-            .Select(d => new
+        public EditDevicesController(IRepository<Device> deviceRepository)
+        {
+            _deviceRepository = deviceRepository;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var devices = await _deviceRepository.GetQueryable()
+                .Where(d => d.IsApproved && !d.IsDeclined)
+                .Select(d => new
+                {
+                    d.Id,
+                    d.Name,
+                    d.Latitude,
+                    d.Longitude,
+                    d.Direction,
+                    d.IsOnline,
+                    d.IsTracking,
+                    d.LastActiveString
+                }).ToListAsync();
+
+            return View(devices);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Update(Guid id, [FromForm] ApprovalsController.DeviceApprovalModel model)
+        {
+            if (!ModelState.IsValid)
             {
-                d.Id,
-                d.Name,
-                d.Latitude,
-                d.Longitude,
-                d.Direction,
-                d.IsOnline,
-                d.IsTracking,
-                d.LastActiveString
-            }).ToListAsync();
+                return BadRequest(ModelState);
+            }
 
-        return View(devices);
-    }
+            var device = await _deviceRepository.GetByIdAsync(id);
+            if (device == null)
+            {
+                return NotFound();
+            }
 
-    [HttpPost]
-    public async Task<IActionResult> Update(Guid id, [FromForm] ApprovalsController.DeviceApprovalModel model)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
+            // Update the device name if it has changed and a new name was provided.
+            if (device.Name != model.Name && model.Name != null)
+            {
+                device.Name = model.Name;
+            }
+
+            // Read raw form values and force the correct decimal separator.
+            var latitudeStr = Request.Form["latitude"].ToString();
+            var longitudeStr = Request.Form["longitude"].ToString();
+            var directionStr = Request.Form["direction"].ToString();
+
+            if (!double.TryParse(latitudeStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double latitude))
+            {
+                return BadRequest("Invalid latitude format.");
+            }
+            if (!double.TryParse(longitudeStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double longitude))
+            {
+                return BadRequest("Invalid longitude format.");
+            }
+            if (!double.TryParse(directionStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double direction))
+            {
+                return BadRequest("Invalid direction format.");
+            }
+
+            device.Latitude = latitude;
+            device.Longitude = longitude;
+            device.Direction = direction;
+
+            await _deviceRepository.UpdateAsync(device);
+            return RedirectToAction(nameof(Index));
         }
-
-        var device = await _deviceRepository.GetByIdAsync(id);
-        if (device == null)
-        {
-            return NotFound();
-        }
-
-        if (device.Name != model.Name && model.Name != null)
-        {
-            device.Name = model.Name;
-        }
-        device.Latitude = model.Latitude;
-        device.Longitude = model.Longitude;
-        device.Direction = model.Direction;
-
-        await _deviceRepository.UpdateAsync(device);
-        return RedirectToAction(nameof(Index));
     }
 }
