@@ -1,0 +1,15 @@
+# This is a systemd unit that runs at startup time.
+[Unit]
+Description=AI component of BeeSafe Application
+Documentation=https://github.com/louis-hertleer/BeeSafeS3
+After=network-online.target
+
+[Service]
+User=nobody
+ExecStart=/opt/beesafe/mock-device.py
+Restart=on-failure
+WorkingDirectory=/opt/beesafe
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
