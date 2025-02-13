@@ -1,6 +1,10 @@
 using BeeSafeWeb.Data;
 using BeeSafeWeb.Services;
 
+/// <summary>
+/// This middleware, as its name suggests, runs on every request, but
+/// when there are no users, it redirects the user to the setup page.
+/// </summary>
 public class SetupMiddleware
 {
     private readonly RequestDelegate _next;

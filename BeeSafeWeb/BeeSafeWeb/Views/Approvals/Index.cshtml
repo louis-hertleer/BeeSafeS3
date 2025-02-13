@@ -5,14 +5,25 @@ List<Device> devices = Model;
 <div class="p-4">
     <div>
         <h1 class="text-3xl font-bold text-center">Pending Devices</h1>
-        <p class="text-center">Here you can see the devices that are pending approval. Click "Set Location" to select a location on the map.</p>
+        <p class="text-center">
+            @if (devices.Count > 0)
+            {
+                <span>Here you can see the devices that are pending approval. Click "Set Location" view and select the location on the map.</span>
+            }
+            else
+            {
+                <span>There are no pending devices at the moment. Please check again later!</span>
+            }
+        </p>
     </div>
 
+    @if(devices.Count > 0)
+    {
     <div class="overflow-x-auto mt-4">
         <table class="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md text-sm sm:text-lg">
             <thead class="bg-gray-200 dark:bg-gray-700 text-center">
             <tr>
-                <th class="py-3 px-4 border">Last Active</th>
+                <th class="py-3 px-4 border">Name</th>
                 <th class="py-3 px-4 border">Latitude</th>
                 <th class="py-3 px-4 border">Longitude</th>
                 <th class="py-3 px-4 border">Direction</th>
@@ -22,52 +33,58 @@ List<Device> devices = Model;
             <tbody>
             @foreach (var device in devices)
             {
-            <tr class="text-center border-t">
-                <td class="py-3 px-4">@device.LastActive.ToString("d/M/yyyy HH:mm")</td>
-                <td class=" px-4">
-                    <input id="latitude-@device.Id"
-                           class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
-                           value="@device.Latitude">
-                </td>
-                <td class="py-3 px-4">
-                    <input id="longitude-@device.Id"
-                           class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
-                           value="@device.Longitude">
-                </td>
-                <td class="py-3 px-4">
-                    <input id="direction-@device.Id"
-                           class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
-                           value="@device.Direction">
-                </td>
-                <td class="py-3 px-4 text-center">
-                    <div class="flex flex-col sm:flex-row gap-2 justify-center items-center">
-                        <button class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition duration-200"
-                                onclick="openModal('@device.Id')">
-                            Set Location
-                        </button>
-
-                        <form id="approval-form-@device.Id" class="hidden flex" method="post" action="@Url.Action("ApproveDevice", "Approvals")">
-                            <input type="hidden" name="id" value="@device.Id">
-                            <input type="hidden" id="form-latitude-@device.Id" name="latitude">
-                            <input type="hidden" id="form-longitude-@device.Id" name="longitude">
-                            <input type="hidden" id="form-direction-@device.Id" name="direction">
-                            <button type="submit" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 transition duration-200">
-                                Approve
+                <tr class="text-center border-t">
+                    <td class=" px-4">
+                        <input id="name-@device.Id"
+                               class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
+                               value="@device.Name">
+                    </td>
+                    <td class=" px-4">
+                        <input id="latitude-@device.Id"
+                               class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
+                               value="@device.Latitude">
+                    </td>
+                    <td class="py-3 px-4">
+                        <input id="longitude-@device.Id"
+                               class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
+                               value="@device.Longitude">
+                    </td>
+                    <td class="py-3 px-4">
+                        <input id="direction-@device.Id"
+                               class="border rounded p-2 w-full dark:bg-gray-700 text-lg"
+                               value="@device.Direction">
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex flex-col sm:flex-row gap-2 justify-center items-center">
+                            <button class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition duration-200"
+                                    onclick="openModal('@device.Id')">
+                                Set Location
                             </button>
-                        </form>
 
-                        <form method="post" onsubmit="rejectDevice(event)" asp-action="RejectDevice" asp-controller="Approvals">
-                            <button type="submit" class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600 transition duration-200">
-                                Decline
-                            </button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
+                            <form id="approval-form-@device.Id" class="hidden flex" method="post" action="@Url.Action("ApproveDevice", "Approvals")">
+                                <input type="hidden" name="id" value="@device.Id">
+                                <input type="hidden" id="form-name-@device.Id" name="name">
+                                <input type="hidden" id="form-latitude-@device.Id" name="latitude">
+                                <input type="hidden" id="form-longitude-@device.Id" name="longitude">
+                                <input type="hidden" id="form-direction-@device.Id" name="direction">
+                                <button type="submit" class="bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600 transition duration-200">
+                                    Approve
+                                </button>
+                            </form>
+
+                            <form method="post" onsubmit="rejectDevice(event)" asp-action="RejectDevice" asp-controller="Approvals">
+                                <button type="submit" class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600 transition duration-200">
+                                    Decline
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
             }
             </tbody>
         </table>
     </div>
+    }
 </div>
 
 <!-- Location Modal -->
@@ -102,257 +119,5 @@ List<Device> devices = Model;
 
 @section Scripts {
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    let map;
-    let marker;
-    let fovLayer;
-    let selectedDeviceId = null;
-    let initialPoint = null;
-    const fovAngle = 40;  
-    const fovDistance = 0.0005;
-
-    function openModal(deviceId) {
-        selectedDeviceId = deviceId;
-        document.getElementById('location-modal').classList.remove('hidden');
-
-        const latitude = parseFloat(document.getElementById(`latitude-${deviceId}`).value);
-        const longitude = parseFloat(document.getElementById(`longitude-${deviceId}`).value);
-
-        if (!map) {
-            map = L.map('map').setView([51.168300, 4.980980], 14);
-
-            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            }).addTo(map);
-
-            map.on('click', function (e) {
-                if (!initialPoint) {
-                    // First click: Set location
-                    if (marker) {
-                        map.removeLayer(marker);
-                    }
-                    marker = L.marker(e.latlng).addTo(map);
-                    initialPoint = e.latlng;
-
-                    document.getElementById(`latitude-${selectedDeviceId}`).value = e.latlng.lat.toFixed(6);
-                    document.getElementById(`longitude-${selectedDeviceId}`).value = e.latlng.lng.toFixed(6);
-
-                    map.on('mousemove', drawCameraFOV);
-                } else {
-                    // Second click: Confirm direction and FOV
-                    const direction = calculateDirection(initialPoint, e.latlng);
-                    document.getElementById(`direction-${selectedDeviceId}`).value = direction.toFixed(2);
-
-                    if (fovLayer) {
-                        map.removeLayer(fovLayer);
-                    }
-
-                    map.off('mousemove', drawCameraFOV);
-                    initialPoint = null;
-
-                    Swal.fire({
-                        position: "top-end",
-                        icon: 'success',
-                        title: 'Location and Direction Confirmed',
-                        text: `Direction: ${direction.toFixed(2)} degrees`,
-                        toast: true,
-                        showConfirmButton: false,
-                        timer: 2500,
-                        background: '#28a745',
-                    });
-                }
-            });
-        }
-
-        if (!isNaN(latitude) && !isNaN(longitude) && latitude !== 0 && longitude !== 0) {
-            map.setView([latitude, longitude], 14);
-            if (marker) {
-                map.removeLayer(marker);
-            }
-            marker = L.marker([latitude, longitude]).addTo(map);
-        }
-}
-
-    function drawCameraFOV(e) {
-        let latlng;
-        if (e.latlng) {
-            latlng = e.latlng;
-        } else if (e.touches && e.touches.length > 0) {
-            const touch = e.touches[0];
-            latlng = map.containerPointToLatLng([touch.clientX, touch.clientY]);
-        }
-
-        if (initialPoint && latlng) {
-            if (fovLayer) {
-                map.removeLayer(fovLayer);
-            }
-
-            const direction = calculateDirection(initialPoint, latlng);
-            fovLayer = createFOVPolygon(initialPoint, direction);
-            fovLayer.addTo(map);
-        }
-}
-
-    function createFOVPolygon(center, direction) {
-        const startAngle = direction - fovAngle / 2;
-        const endAngle = direction + fovAngle / 2;
-
-        const points = [center];
-
-        for (let angle = startAngle; angle <= endAngle; angle += 5) {
-            const rad = angle * (Math.PI / 180);
-            const latOffset = Math.cos(rad) * fovDistance;
-            const lngOffset = Math.sin(rad) * fovDistance;
-
-            points.push([
-                center.lat + latOffset,
-                center.lng + lngOffset
-            ]);
-        }
-
-        points.push(center);
-
-        return L.polygon(points, {
-            color: 'red',
-            fillColor: 'rgba(255, 0, 0, 0.5)',
-            fillOpacity: 0.3
-        });
-    }
-
-
-    function calculateDirection(point1, point2) {
-        const lat1 = point1.lat * (Math.PI / 180);
-        const lon1 = point1.lng * (Math.PI / 180);
-        const lat2 = point2.lat * (Math.PI / 180);
-        const lon2 = point2.lng * (Math.PI / 180);
-
-        const dLon = lon2 - lon1;
-
-        const y = Math.sin(dLon) * Math.cos(lat2);
-        const x = Math.cos(lat1) * Math.sin(lat2) -
-            Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
-
-        let bearing = Math.atan2(y, x) * (180 / Math.PI);
-        bearing = (bearing + 360) % 360;  // Normalize the bearing
-
-        return bearing;
-    }
-
-
-    function searchCity() {
-        const cityName = document.getElementById('city-search').value;
-        if (!cityName) {
-            Swal.fire({
-                position: "top-end",
-                icon: 'warning',
-                title: 'Oops...',
-                toast: true,
-                text: 'Please enter a city name!',
-                showConfirmButton: false,
-                timer: 2500,
-                background: '#FFA500'
-            });
-            return;
-        }
-
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${cityName}&countrycodes=BE`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.length > 0) {
-                    const lat = parseFloat(data[0].lat);
-                    const lon = parseFloat(data[0].lon);
-                    map.setView([lat, lon], 14);
-                } else {
-                    Swal.fire(
-                        {
-                            position: "top-end",
-                            icon: 'warning',
-                            title: 'City Not Found',
-                            text: 'Please enter a valid city in Belgium.',
-                            toast: true,
-                            timer: 2500,
-                            showConfirmButton: false,
-                            background: '#fd7e14',
-                        }
-                    );
-                }
-            })
-            .catch(error => Swal.fire(
-                {
-                    position: "top-end",
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An error occurred while fetching city data. Please try again.',
-                    toast: true,
-                    timer: 2500,
-                    showConfirmButton: false,
-                    background: '#dc3545',
-                }
-            ));
-    }
-
-    function handleKeyPress(event) {
-        if (event.key === "Enter") {
-            searchCity();
-        }
-    }
-
-    function confirmLocation() {
-        const lat = parseFloat(document.getElementById(`latitude-${selectedDeviceId}`).value);
-        const lng = parseFloat(document.getElementById(`longitude-${selectedDeviceId}`).value);
-        const direction = parseFloat(document.getElementById(`direction-${selectedDeviceId}`).value);
-
-        if (!isNaN(lat) && !isNaN(lng) && !isNaN(direction)) {
-            document.getElementById(`form-latitude-${selectedDeviceId}`).value = lat.toFixed(6);
-            document.getElementById(`form-longitude-${selectedDeviceId}`).value = lng.toFixed(6);
-            document.getElementById(`form-direction-${selectedDeviceId}`).value = direction.toFixed(2);
-
-            document.getElementById(`approval-form-${selectedDeviceId}`).classList.remove('hidden');
-            closeModal();
-        } else {
-            Swal.fire({
-                position: "top-end",
-                icon: 'warning',
-                title: 'Incomplete Data',
-                text: 'Please set both location and direction.',
-                toast: true,
-                timer: 2500,
-                showConfirmButton: false,
-                background: '#fd7e14',
-            });
-        }
-}
-
-    function closeModal() {
-        document.getElementById('location-modal').classList.add('hidden');
-        if (marker) {
-            map.removeLayer(marker);
-            marker = null;
-        }
-        if (fovLayer) {
-            map.removeLayer(fovLayer);
-            fovLayer = null;
-        }
-        initialPoint = null;
-    }
-
-    function rejectDevice(event) {
-        console.log("Is this bloody function even called?")
-        event.preventDefault();  
-        Swal.fire({
-            title: 'Are you sure?',
-            text: 'Do you really want to decline this device?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, decline it!'
-        }).then(result => {
-            if (result.isConfirmed) {
-                event.target.submit();
-            }
-        });
-    }
-</script>
+<script src="~/js/device.js"></script>
 }

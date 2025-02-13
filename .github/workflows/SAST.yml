@@ -1,10 +1,12 @@
 name: "CodeQL Advanced"
 
 on:
- push:
-   branches: 
-     - main
+  push:
+    branches:
+      - main
+# Analyse code on Pull Request, before pushing to main
 jobs:
+# CodeQL Job
  analyze:
    name: Analyze (${{ matrix.language }})
    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
@@ -18,8 +20,10 @@ jobs:
      fail-fast: false
      matrix:
        include:
+        # Languages to analyse
        - language: csharp
          build-mode: manual
+         #.NET Should be build manually, will not work with autobuild 
        - language: javascript-typescript
          build-mode: none
        - language: python
@@ -37,6 +41,7 @@ jobs:
        languages: ${{ matrix.language }}
        build-mode: ${{ matrix.build-mode }}
 
+  # Manual Build Process for .NET Application
    - name: Setup Node.js
      if: matrix.language == 'csharp'
      uses: actions/setup-node@v4
@@ -50,6 +55,6 @@ jobs:
        npm install
        dotnet restore BeeSafeWeb/BeeSafeWeb.csproj
        dotnet build BeeSafeWeb/BeeSafeWeb.csproj -c Release
-
+  #Start Scan
    - name: Perform CodeQL Analysis
      uses: github/codeql-action/analyze@v3
