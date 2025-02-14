@@ -53,6 +53,7 @@ namespace BeeSafeWeb.Controllers
 
             // Update the device name if one is provided.
             if (!string.IsNullOrEmpty(model.Name))
+
             {
                 device.Name = model.Name;
             }
