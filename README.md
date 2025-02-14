@@ -13,6 +13,65 @@ It will track hornet activity and try to calculate a nest location with directio
 If the IoT device is attached to an electric harp, it will trigger it if an hornet is detected in the FOV.
 The electric harp will attempt to kill the hornet if it flies through the trap.
 
+## Architecture
+Our solution consists of two parts: the web application, which is the user interface for the end users,
+and the device code which runs on the Raspberry Pi.
+
+### Web application
+TODO
+
+### Device code
+This component of the solution is written in Python. It runs the AI model, taking images from the video feed and
+constantly sending messages to the web application.
+
+## Setup
+You will need a Raspberry Pi 4 as a device, with any UVC compatible webcam (generally any USB webcam/camera will
+work) as the camera. You will also need an `ssh` connection with the Raspberry Pi.
+
+### Steps
+> [!NOTE]  
+> Commands that are run with the regular user are prefixed with `$` should be run with the regular user,
+> commands prefixed with `#` are to be run as root, such as with `sudo`.
+
+Clone this GitHub repository as follows, and enter into the directory:
+```
+$ git clone --depth 1 https://github.com/louis-hertleer/BeeSafeS3
+$ cd BeeSafeS3
+```
+Take a look at `device-code/real-device.py`. Modify the URL variable to your production web application URL
+if it is not correct.
+
+Install the required dependencies with the command below:
+```
+# pip install numpy scipy ultralytics opencv-python
+```
+This will install the dependencies system-wide, as the systemd unit (see below) will run as an unprivileged user.
+If `pip` complains about breaking system packages, override that behavior with the `--break-system-packages` flag.
+
+The systemd unit expects the application to be located in `/opt/beesafe`, so create a folder called "beesafe" in
+the `/opt` directory:
+```
+# mkdir /opt/beesafe
+```
+
+Copy the contents of the `device-code` into the newly created folder, and go to it:
+```
+# cp ./device-code/* /opt/beesafe
+$ cd /opt/beesafe
+```
+Enable the systemd unit, so that it runs on startup:
+```
+# systemctl enable ./beesafe.service
+```
+
+Optionally, you can start it immediately:
+```
+# systemctl start beesafe.service
+```
+
+The device should appear in the "Pending Devices" page. If not, double check whether the URL in `real-device.py` is correct,
+and that there is an outgoing internet connection. 
+
 ## BeeSafe Application
 The applications is accessible through a public link given in the pipeline or in our case, hosted on a fixed domain name: <a href="https://beesafe.space/">BeeSafe Application</a>
 Once you register an account, you can add your own IoT devices. 
