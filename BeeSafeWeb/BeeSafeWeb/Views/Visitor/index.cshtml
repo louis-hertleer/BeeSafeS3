@@ -2,6 +2,8 @@
     var activeNests = ViewData["ActiveNests"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
     var destroyedNests = ViewData["DestroyedNests"] as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
     var totalNests = activeNests.Count() + destroyedNests.Count();
+    ViewData["Title"] = "Visitor";
+
 }
 
 <!-- Parallax Scrolling Section -->

@@ -1,8 +1,8 @@
 @model BeeSafeWeb.Models.ManualDirectionIndexViewModel
 
 @{
-    Layout = "_Layout";
-    ViewData["Title"] = "Set Hornet Direction";
+Layout = "_Layout";
+ViewData["Title"] = "Set Hornet Direction";
 }
 
 <h1 class="text-3xl font-bold mb-4">Set Hornet Direction</h1>
@@ -12,30 +12,30 @@
     <h2 class="text-xl font-semibold mb-2">Devices</h2>
     <table class="min-w-full border">
         <thead>
-            <tr>
-                <th class="border p-2">Name</th>
-                <th class="border p-2">Action</th>
-            </tr>
+        <tr>
+            <th class="border p-2">Name</th>
+            <th class="border p-2">Action</th>
+        </tr>
         </thead>
         <tbody>
-            @foreach (var device in Model.Devices)
-            {
-                <tr>
-                    <td class="border p-2 text-center">@device.Name</td>
-                    <td class="border p-2 text-center">
-                        <button type="button" class="bg-yellow-500 text-white px-3 py-1 rounded"
-                                onclick="openDirectionModal(
-                                    '@device.Id',
-                                    @device.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                                    @device.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                                    '@device.Name',
-                                    @device.Direction.ToString(System.Globalization.CultureInfo.InvariantCulture)
-                                    )">
-                            Set Hornet Direction
-                        </button>
-                    </td>
-                </tr>
-            }
+        @foreach (var device in Model.Devices)
+        {
+        <tr>
+            <td class="border p-2 text-center">@device.Name</td>
+            <td class="border p-2 text-center">
+                <button type="button" class="bg-yellow-500 text-white px-3 py-1 rounded"
+                        onclick="openDirectionModal(
+                            '@device.Id',
+                        @device.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        @device.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                            '@device.Name',
+                        @device.Direction.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                            )">
+                    Set Hornet Direction
+                </button>
+            </td>
+        </tr>
+        }
         </tbody>
     </table>
 </div>
@@ -43,36 +43,43 @@
 <!-- Manual Detections Management Section -->
 <div class="mb-6">
     <h2 class="text-xl font-semibold mb-2">Manage Manual Detections</h2>
+    @if (Model.ManualDetections.Any())
+    {
     <table class="min-w-full border-collapse border">
         <thead>
-            <tr>
-                <th class="border p-2">Device</th>
-                <th class="border p-2">Hornet Direction</th>
-                <th class="border p-2">Hornet Count</th>
-                <th class="border p-2">Timestamp</th>
-                <th class="border p-2">Actions</th>
-            </tr>
+        <tr>
+            <th class="border p-2">Device</th>
+            <th class="border p-2">Hornet Direction</th>
+            <th class="border p-2">Hornet Count</th>
+            <th class="border p-2">Timestamp</th>
+            <th class="border p-2">Actions</th>
+        </tr>
         </thead>
         <tbody>
-            @foreach (var detection in Model.ManualDetections)
-            {
-                <tr>
-                    <td class="border p-2 text-center">@detection.Device?.Name</td>
-                    <td class="border p-2 text-center">@detection.HornetDirection</td>
-                    <td class="border p-2 text-center">@detection.HornetCount</td>
-                    <td class="border p-2 text-center">@detection.SecondDetection.ToString("g")</td>
-                    <td class="border p-2 text-center">
-                        <form asp-controller="ManualDirection" asp-action="Delete" asp-route-id="@detection.Id" method="post" class="inline-block ml-2" onsubmit="return confirm('Are you sure you want to delete this detection?');">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded">
-                                Delete
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-            }
+        @foreach (var detection in Model.ManualDetections)
+        {
+        <tr>
+            <td class="border p-2 text-center">@detection.Device?.Name</td>
+            <td class="border p-2 text-center">@detection.HornetDirection</td>
+            <td class="border p-2 text-center">@detection.HornetCount</td>
+            <td class="border p-2 text-center">@detection.SecondDetection.ToString("g")</td>
+            <td class="border p-2 text-center">
+                <form id="deleteForm-@detection.Id" asp-controller="ManualDirection" asp-action="Delete" asp-route-id="@detection.Id" method="post" class="inline-block ml-2">
+                    @Html.AntiForgeryToken()
+                    <button type="button" class="bg-red-500 text-white px-3 py-1 rounded" onclick="confirmDelete('@detection.Id')">
+                        Delete
+                    </button>
+                </form>
+            </td>
+        </tr>
+        }
         </tbody>
     </table>
+    }
+    else
+    {
+    <p class="text-gray-500">No manual detections have been added yet.</p>
+    }
 </div>
 
 <!-- Modal for setting hornet direction and manual detection data -->
@@ -109,7 +116,32 @@
 </div>
 
 @section Scripts {
-    <script>
+<script>
+    function confirmDelete(detectionId) {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This action cannot be undone!",
+            icon: "warning",
+            showCancelButton: true,
+            background: "#1f2937", // Dark background (Tailwind gray-800)
+            color: "#ffffff", // White text
+            confirmButtonColor: "#facc15", // Yellow (Tailwind yellow-400)
+            cancelButtonColor: "#6b7280", // Gray (Tailwind gray-500)
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "Cancel",
+            customClass: {
+                popup: "swal-popup-custom",
+                title: "swal-title-custom",
+                confirmButton: "swal-confirm-custom",
+                cancelButton: "swal-cancel-custom"
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.querySelector(`#deleteForm-${detectionId}`).submit();
+            }
+        });
+    }
+
     // Icon for device marker.
     var cameraIcon = L.icon({
         iconUrl: '/assets/photo-camera.svg',
@@ -262,7 +294,7 @@
         document.getElementById('directionModal').classList.add('hidden');
     }
 </script>
-    <style>
+<style>
     .arrow-icon {
         background: transparent;
     }

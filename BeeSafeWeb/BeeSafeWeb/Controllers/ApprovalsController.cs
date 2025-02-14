@@ -1,3 +1,4 @@
+using System.Globalization;
 using BeeSafeWeb.Data;
 using BeeSafeWeb.Utility.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -50,17 +51,41 @@ namespace BeeSafeWeb.Controllers
                 return NotFound();
             }
 
-            if (model.Name != null && model.Name.Length > 1)
+            // Update the device name if one is provided.
+            if (!string.IsNullOrEmpty(model.Name))
+
             {
                 device.Name = model.Name;
             }
-            device.Latitude = model.Latitude;
-            device.Longitude = model.Longitude;
-            device.Direction = model.Direction;
+
+            // read the raw form values and parse them using InvariantCulture.
+            var latitudeStr = Request.Form["latitude"].ToString();
+            var longitudeStr = Request.Form["longitude"].ToString();
+            var directionStr = Request.Form["direction"].ToString();
+
+            if (!double.TryParse(latitudeStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double latitude))
+            {
+                return BadRequest("Invalid latitude format.");
+            }
+            if (!double.TryParse(longitudeStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double longitude))
+            {
+                return BadRequest("Invalid longitude format.");
+            }
+            if (!double.TryParse(directionStr, NumberStyles.Float, CultureInfo.InvariantCulture, out double direction))
+            {
+                return BadRequest("Invalid direction format.");
+            }
+
+            device.Latitude = latitude;
+            device.Longitude = longitude;
+            device.Direction = direction;
             device.IsApproved = true;
             device.LastActive = DateTime.UtcNow;
 
             await _deviceRepository.UpdateAsync(device);
+            
+            TempData["SuccessMessage"] = "Device updated successfully!";
+
             return RedirectToAction(nameof(Index));
         }
 

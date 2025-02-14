@@ -182,7 +182,6 @@ namespace BeeSafeWeb.Controllers
             }
 
             _logger.LogDebug("Deleting detection event ID {Id}", id);
-            // Here we assume DeleteAsync accepts the entire detection event. Adjust if needed.
             await _detectionEventRepository.DeleteAsync(detection.Id);
             return RedirectToAction("Index");
         }
