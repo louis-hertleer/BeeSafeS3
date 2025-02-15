@@ -17,18 +17,25 @@ The electric harp will attempt to kill the hornet if it flies through the trap.
 Our solution consists of two parts: the web application, which is the user interface for the end users,
 and the device code which runs on the Raspberry Pi.
 
-### Web application
-TODO
-
 ### Device code
-This component of the solution is written in Python. It runs the AI model, taking images from the video feed and
-constantly sending messages to the web application.
+This component of the solution is written in Python. It runs the AI model, takes images from the video feed and
+constantly sends messages to the web application.
+
+### Web application
+This component of the solution is written in C#, with ASP.NET. This collects the data from the devices,
+performing the predictions of the hornet nests from that data, and allows the user of our solution to easily
+view and manage that information in an easy to use web interface.
 
 ## Setup
+In this section, we will go over how to set up our solution.
+
+### Device code
+The code of this component is located in the `device-code` folder in this repository.
+
 You will need a Raspberry Pi 4 as a device, with any UVC compatible webcam (generally any USB webcam/camera will
 work) as the camera. You will also need an `ssh` connection with the Raspberry Pi.
 
-### Steps
+#### Steps
 > [!NOTE]  
 > Commands that are run with the regular user are prefixed with `$` should be run with the regular user,
 > commands prefixed with `#` are to be run as root, such as with `sudo`.
@@ -70,7 +77,34 @@ Optionally, you can start it immediately:
 ```
 
 The device should appear in the "Pending Devices" page. If not, double check whether the URL in `real-device.py` is correct,
-and that there is an outgoing internet connection. 
+and that there is an outgoing internet connection.
+
+### Web application
+> [!NOTE]  
+> This web application requires Microsoft SQL Server. Using a different database management system requires modification of
+> the code.
+
+The code of this component is located in the `BeeSafeWeb` folder in this repository.
+
+In the `BeeSafeWeb`, there is a Dockerfile which will allow for easy building of the web application. An example command to
+build the Dockerfile (from the root of the repository):
+```
+$ docker build -t beesafe:latest ./BeeSafeWeb
+```
+
+To run the application (exposing container port 80 to host port 8080)
+```
+$ docker run -p 8080:80 beesafe:latest
+```
+
+#### Connecting a database
+Connecting a database to the application is required, as it will crash on startup without one. You can pass a connection
+string to the web application as an environment variable:
+```
+$ docker run -p 8080:80 -e "ConnectionStrings:DefaultConnection"="Server=yourdbhost;User ID=yourusername;Password=yourpassword" beesafe:latest
+```
+> [!WARNING]
+> This specific command may not work on PowerShell for some reason, due to how it handles special characters.
 
 ## BeeSafe Application
 The applications is accessible through a public link given in the pipeline or in our case, hosted on a fixed domain name: <a href="https://beesafe.space/">BeeSafe Application</a>
