@@ -2,17 +2,34 @@ namespace BeeSafeWeb.Models
 {
     public class NestCalculationSettingsViewModel
     {
-        // Hornet speed in m/s.
+        /// <summary>
+        /// Hornet speed in m/s.
+        /// </summary>
         public double HornetSpeed { get; set; }
-        // Correction factor for distance calculation.
+        
+        /// <summary>
+        /// Correction factor for distance calculation.
+        /// </summary>
         public double CorrectionFactor { get; set; }
-        // Geographic threshold (meters) used for clustering.
+        
+        /// <summary>
+        /// Geographic threshold (meters) used for clusteri
+        /// </summary>
         public double GeoThreshold { get; set; }
-        // If true, the hornet bearing is reversed.
+
+        /// <summary>
+        /// If true, the hornet bearing is reversed.
+        /// </summary>
         public double DirectionBucketSize { get; set; }
-        // Maximum allowed difference (in degrees) within a bucket.
+                
+        /// <summary>
+        /// Maximum allowed difference (in degrees) within a bucket.
+        /// </summary>
         public double DirectionThreshold { get; set; }
-        // Overlap threshold for merging clusters.
+                
+        /// <summary>
+        /// Overlap threshold for merging clusters.
+        /// </summary>
         public double OverlapThreshold { get; set; }
     }
 }
