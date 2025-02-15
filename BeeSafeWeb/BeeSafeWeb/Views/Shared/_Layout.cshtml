@@ -80,15 +80,32 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Hornet Direction -->
-                        <p>
-                            <a asp-controller="ManualDirection" asp-action="Index" 
-                               class="block text-center md:inline hover:bg-gray-600 px-6 py-2 transition-colors rounded-md dark:hover:bg-yellow-500">
-                                Hornet Direction
-                            </a>
-                        </p>
-
+                        <!-- Hornet dropdown -->
+                        <div class="relative w-full md:w-auto">
+                            <button type="button"
+                                    class="dropdown-toggle mx-auto flex items-center justify-center whitespace-nowrap
+                                           md:inline-flex 
+                                           hover:bg-gray-600 px-6 py-2 transition-colors rounded-md focus:outline-none"
+                                    onclick="toggleDropdown(event)">
+                                Hornets
+                                <svg class="w-5 h-5 ml-2 -mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div class="dropdown-menu hidden 
+                                        w-full text-center
+                                        md:w-56 md:absolute md:left-0 md:mt-2 md:rounded-md md:shadow-lg md:bg-slate-700 md:ring-1 md:ring-black md:ring-opacity-5">
+                                <div class="py-1">
+                                    <a asp-controller="ManualDirection" asp-action="Index" class="block text-white px-4 py-2 hover:bg-gray-600">
+                                        Hornet Direction
+                                    </a>
+                                    <a asp-controller="NestCalculationSettings" asp-action="Index" class="block text-white px-4 py-2 hover:bg-gray-600">
+                                        Hornet Calculations
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- Account Dropdown -->
                         <div class="relative w-full md:w-auto">
                             <button type="button"
@@ -110,7 +127,7 @@
                                     </a>
                                     <form class="block" asp-area="Identity" asp-page="/Account/Logout" 
                                           asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                                        <button type="submit" class="w-full text-left text-white px-4 py-2 hover:bg-gray-600">
+                                        <button type="submit" class="w-full text-center text-white px-4 py-2 hover:bg-gray-600">
                                             Logout
                                         </button>
                                     </form>
