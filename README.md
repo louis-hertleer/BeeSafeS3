@@ -100,6 +100,84 @@ To see your own registered traps, you will need to have an account and register 
 
 <img width="65%" style="float:center;" src="https://github.com/user-attachments/assets/e077132a-4cdf-41ed-8545-2e403413072a">
 
+# Nest Calculation Explanation
+
+The nest calculation component of BeeSafeS3 is responsible for processing detection events and predicting the likely location of Asian Hornet nests. This process involves several steps and uses configurable dynamic settings to adjust the behavior of the calculations. Below is an in-depth explanation of how these calculations work.
+
+## Overview
+
+The calculation service processes detection events received from IoT devices. Each detection event contains data such as:
+- **Device Location:** The latitude and longitude where the event was recorded.
+- **Detection Timing:** The time difference between the first and second detection, which represents the hornet’s flight time.
+- **Hornet Direction:** The direction from which the hornet was detected.
+
+Using these data points, the service estimates where a hornet nest might be located by predicting how far and in which direction a hornet may have traveled.
+
+## Dynamic Settings
+
+The service uses several adjustable settings to fine-tune the calculations. These settings are loaded dynamically (from a settings class) and include:
+
+- **Hornet Speed (m/s):**  
+  The average speed at which a hornet flies. This value affects the estimated travel distance during the detection period.
+
+- **Correction Factor:**  
+  A multiplier that adjusts the calculated travel distance. A higher correction factor increases the estimated distance and vice versa.
+
+- **Geo Threshold (m):**  
+  The maximum geographic distance within which two nest estimates are considered overlapping. This threshold is used when clustering individual estimates.
+
+- **Direction Bucket Size (°):**  
+  The angular range used to group nest estimates by their direction. Smaller bucket sizes lead to more precise directional grouping.
+
+- **Direction Threshold (°):**  
+  The maximum allowed difference in direction (within a bucket) for estimates to be merged. Estimates with a smaller difference in direction are more likely to be part of the same cluster.
+
+- **Overlap Threshold:**  
+  The ratio threshold that determines how much the accuracy circles (representing uncertainty) of two estimates must overlap to be merged into a single cluster.
+
+*Note:* The **Reverse Bearing** flag is not dynamic—it is hardcoded. When enabled, it reverses the detected bearing by adding 180° to it.
+
+## Calculation Process
+
+### 1. Data Retrieval & Filtering
+- **Retrieval:**  
+  The service retrieves existing nest estimates and detection events from the database, including related information such as device details and known hornet data.
+- **Filtering:**  
+  Detection events are filtered to ensure they are valid. An event is considered valid if:
+  - It is associated with a device.
+  - It has a known hornet or is marked as a manual event.
+  - The time difference between the first and second detection is positive and does not exceed 20 minutes.
+
+### 2. Individual Nest Estimate Calculation
+For each valid detection event:
+- **Flight Time Calculation:**  
+  The service calculates the flight time in seconds.
+- **Distance Estimation:**  
+  Using the dynamic hornet speed and correction factor, the estimated distance traveled by the hornet is computed.
+- **Direction Processing:**  
+  The detected hornet direction is converted to radians. If the reverse bearing flag is enabled, the bearing is adjusted by 180°.
+- **Location Prediction:**  
+  Spherical trigonometry is applied (using concepts similar to the haversine formula) to predict the new latitude and longitude where the hornet nest might be located.
+- **Nest Estimate Creation:**  
+  A nest estimate is created with the predicted coordinates, an accuracy value based on the estimated distance, and the final adjusted direction.
+
+### 3. Clustering & Refinement
+- **Grouping:**  
+  Individual estimates are first grouped by device (or hornet). Within each group, they are further bucketed by their direction using the dynamic bucket size.
+- **Merging Overlapping Estimates:**  
+  Within each direction bucket, overlapping estimates (those that are both geographically close and similar in direction) are merged.  
+  - The service uses weighted averages (weighted by the inverse square of the display accuracy) to merge overlapping estimates.
+  - The overlap between estimates is quantified by comparing the intersection area of their accuracy circles to the area of the smaller circle. If this overlap ratio exceeds the dynamic overlap threshold, the estimates are merged.
+
+### 4. Final Merging & Persistence
+- **Post-Processing:**  
+  After initial clustering, clusters that are fully contained within each other are merged further.
+- **Output:**  
+  The final merged nest estimates are then saved to the database and are available for further processing by the application (e.g., triggering traps).
+
+## Conclusion
+
+This dynamic and configurable approach enables the BeeSafeS3 system to adapt the nest calculation algorithm in real time. By adjusting these parameters, the accuracy of nest predictions can be fine-tuned based on real-world detection data, ultimately helping local beekeepers respond effectively to Asian Hornet threats.
 
 
 
