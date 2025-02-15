@@ -1,0 +1,19 @@
+# Dataset configuration for YOLOv5 training
+
+#This is the base directory containing both train and validation folders.
+path: /content/drive/MyDrive/Colab Notebooks/Rae/dataset  # Root path where the dataset is stored. 
+
+# Path to the training images directory. Specifies where the training images are stored. The model will look for images in this directory during training.
+train: /content/drive/MyDrive/Colab Notebooks/Rae/dataset/train  
+
+# Path to the validation images directory. Specifies where the validation images are stored. 
+# Validation images are used to evaluate the model after each epoch to check how well it generalizes.
+val: /content/drive/MyDrive/Colab Notebooks/Rae/dataset/val  
+
+# Class names are specified here.
+names:
+  0: Asian Hornet  
+  # The name of the class in the dataset. In this case, the dataset contains only one class, which is "Asian Hornet". The number '0' corresponds to the class ID. If you have more classes, you'd list them like:
+  # 1: "Class 2 Name"
+  # 2: "Class 3 Name"
+  # The class names will be used by the model to label the objects in the images.
