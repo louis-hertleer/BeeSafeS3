@@ -42,12 +42,12 @@ namespace BeeSafeWeb.Controllers
                 .Where(e => e.IsManual)
                 .ToList();
 
-            _logger.LogDebug("ManualDirectionController.Index: {DeviceCount} devices, {DetectionCount} manual detections", devices.Count, manualDetections.Count);
-
             var model = new ManualDirectionIndexViewModel
             {
                 Devices = devices,
-                ManualDetections = manualDetections
+                ManualDetections = manualDetections,
+                // Initialize the ManualDetectionInput property
+                ManualDetectionInput = new ManualDetectionInputModel()
             };
 
             return View(model);
@@ -57,115 +57,101 @@ namespace BeeSafeWeb.Controllers
         /// Submits a manual detection event. Groups with an existing event if possible.
         /// </summary>
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SubmitManualDetection(ManualDetectionInputModel input)
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> SubmitManualDetection(ManualDetectionInputModel input)
+{
+    if (!ModelState.IsValid)
+    {
+        var devices = _deviceRepository.GetQueryable()
+            .Where(d => d.IsApproved)
+            .ToList();
+        var model = new ManualDirectionIndexViewModel
         {
-            _logger.LogDebug(
-                "SubmitManualDetection called: DeviceId={DeviceId}, HornetDirection={HornetDirection}, NumberOfHornets={NumberOfHornets}, FlightTimeMinutes={FlightTimeMinutes}",
-                input.DeviceId, input.HornetDirection, input.NumberOfHornets, input.FlightTimeMinutes);
-
-            if (!ModelState.IsValid)
-            {
-                var devices = _deviceRepository.GetQueryable()
-                    .Where(d => d.IsApproved)
-                    .ToList();
-                var model = new ManualDirectionIndexViewModel
-                {
-                    Devices = devices,
-                    ManualDetections = _detectionEventRepository.GetQueryable()
-                        .Include(e => e.Device)
-                        .Where(e => e.IsManual)
-                        .ToList()
-                };
-                return View("Index", model);
-            }
-
-            if (!Guid.TryParse(input.DeviceId, out Guid deviceId))
-            {
-                _logger.LogWarning("SubmitManualDetection: Invalid device ID: {DeviceId}", input.DeviceId);
-                return BadRequest("Invalid device ID.");
-            }
-
-            var device = await _deviceRepository.GetByIdAsync(deviceId);
-            if (device == null)
-            {
-                _logger.LogWarning("SubmitManualDetection: Device not found: {DeviceId}", deviceId);
-                return NotFound();
-            }
-
-            int numberOfHornets = input.NumberOfHornets > 0 ? input.NumberOfHornets : 1;
-            double flightTimeMinutes = input.FlightTimeMinutes > 0 ? input.FlightTimeMinutes : 0.5;
-            TimeSpan flightTime = TimeSpan.FromMinutes(flightTimeMinutes);
-            DateTime now = DateTime.Now;
-
-            _logger.LogDebug("SubmitManualDetection: Now={Now}, FlightTimeMinutes={FlightTimeMinutes}", now,
-                flightTimeMinutes);
-
-            TimeSpan groupingWindow = TimeSpan.FromMinutes(5);
-            var existingManualEvent = _detectionEventRepository.GetQueryable()
+            Devices = devices,
+            ManualDetections = _detectionEventRepository.GetQueryable()
                 .Include(e => e.Device)
-                .Where(e => e.Device != null && e.Device.Id == device.Id && e.IsManual)
-                .OrderByDescending(e => e.SecondDetection)
-                .FirstOrDefault();
+                .Where(e => e.IsManual)
+                .ToList(),
+            // Pass the input model back to the view
+            ManualDetectionInput = input
+        };
+        return View("Index", model);
+    }
 
-            if (existingManualEvent != null && (now - existingManualEvent.SecondDetection) < groupingWindow)
-            {
-                double directionDifference =
-                    System.Math.Abs(existingManualEvent.HornetDirection - input.HornetDirection);
-                if (directionDifference > 180)
-                    directionDifference = 360 - directionDifference;
-                const double directionThreshold = 45;
-                _logger.LogDebug("Existing manual event found: {EventId}, DirectionDifference={Difference}",
-                    existingManualEvent.Id, directionDifference);
+    if (!Guid.TryParse(input.DeviceId, out Guid deviceId))
+    {
+        return BadRequest("Invalid device ID.");
+    }
 
-                if (directionDifference <= directionThreshold)
-                {
-                    existingManualEvent.HornetCount += numberOfHornets;
-                    existingManualEvent.HornetDirection =
-                        (existingManualEvent.HornetDirection + input.HornetDirection) / 2;
-                    existingManualEvent.SecondDetection = now;
-                    _logger.LogDebug(
-                        "Grouping with existing manual event: new HornetCount={Count}, new HornetDirection={Dir}",
-                        existingManualEvent.HornetCount, existingManualEvent.HornetDirection);
-                    await _detectionEventRepository.UpdateAsync(existingManualEvent);
-                }
-                else
-                {
-                    var newEvent = new DetectionEvent
-                    {
-                        Id = Guid.NewGuid(),
-                        FirstDetection = now,
-                        SecondDetection = now.Add(flightTime),
-                        HornetDirection = input.HornetDirection,
-                        IsManual = true,
-                        HornetCount = numberOfHornets,
-                        Device = device
-                    };
-                    _logger.LogDebug(
-                        "Creating separate manual event due to direction difference. New event ID: {NewId}",
-                        newEvent.Id);
-                    await _detectionEventRepository.AddAsync(newEvent);
-                }
-            }
-            else
-            {
-                var newEvent = new DetectionEvent
-                {
-                    Id = Guid.NewGuid(),
-                    FirstDetection = now,
-                    SecondDetection = now.Add(flightTime),
-                    HornetDirection = input.HornetDirection,
-                    IsManual = true,
-                    HornetCount = numberOfHornets,
-                    Device = device
-                };
-                _logger.LogDebug("No recent manual event found; creating new event. New event ID: {NewId}",
-                    newEvent.Id);
-                await _detectionEventRepository.AddAsync(newEvent);
-            }
+    var device = await _deviceRepository.GetByIdAsync(deviceId);
+    if (device == null)
+    {
+        return NotFound();
+    }
 
-            return RedirectToAction("Index");
+    int numberOfHornets = input.NumberOfHornets > 0 ? input.NumberOfHornets : 1;
+    double flightTimeMinutes = input.FlightTimeMinutes > 0 ? input.FlightTimeMinutes : 0.5;
+    TimeSpan flightTime = TimeSpan.FromMinutes(flightTimeMinutes);
+    DateTime now = DateTime.Now;
+
+    TimeSpan groupingWindow = TimeSpan.FromMinutes(5);
+    var existingManualEvent = _detectionEventRepository.GetQueryable()
+        .Include(e => e.Device)
+        .Where(e => e.Device != null && e.Device.Id == device.Id && e.IsManual)
+        .OrderByDescending(e => e.SecondDetection)
+        .FirstOrDefault();
+
+    if (existingManualEvent != null && (now - existingManualEvent.SecondDetection) < groupingWindow)
+    {
+        double directionDifference =
+            System.Math.Abs(existingManualEvent.HornetDirection - input.HornetDirection);
+        if (directionDifference > 180)
+            directionDifference = 360 - directionDifference;
+        const double directionThreshold = 45;
+
+        if (directionDifference <= directionThreshold)
+        {
+            existingManualEvent.HornetCount += numberOfHornets;
+            existingManualEvent.HornetDirection =
+                (existingManualEvent.HornetDirection + input.HornetDirection) / 2;
+            existingManualEvent.SecondDetection = now;
+
+            await _detectionEventRepository.UpdateAsync(existingManualEvent);
         }
+        else
+        {
+            var newEvent = new DetectionEvent
+            {
+                Id = Guid.NewGuid(),
+                FirstDetection = now,
+                SecondDetection = now.Add(flightTime),
+                HornetDirection = input.HornetDirection,
+                IsManual = true,
+                HornetCount = numberOfHornets,
+                Device = device
+            };
+
+            await _detectionEventRepository.AddAsync(newEvent);
+        }
+    }
+    else
+    {
+        var newEvent = new DetectionEvent
+        {
+            Id = Guid.NewGuid(),
+            FirstDetection = now,
+            SecondDetection = now.Add(flightTime),
+            HornetDirection = input.HornetDirection,
+            IsManual = true,
+            HornetCount = numberOfHornets,
+            Device = device
+        };
+
+        await _detectionEventRepository.AddAsync(newEvent);
+    }
+
+    return RedirectToAction("Index");
+}
         
         /// <summary>
         /// Deletes a manual detection event.
@@ -177,11 +163,9 @@ namespace BeeSafeWeb.Controllers
             var detection = await _detectionEventRepository.GetByIdAsync(id);
             if (detection == null || !detection.IsManual)
             {
-                _logger.LogWarning("Delete: Detection event not found or not manual. ID: {Id}", id);
                 return NotFound();
             }
 
-            _logger.LogDebug("Deleting detection event ID {Id}", id);
             await _detectionEventRepository.DeleteAsync(detection.Id);
             return RedirectToAction("Index");
         }
