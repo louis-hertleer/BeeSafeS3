@@ -91,21 +91,23 @@ ViewData["Title"] = "Set Hornet Direction";
             <label class="block text-sm font-medium text-gray-300">Current Direction (degrees):</label>
             <input type="number" id="currentDirection" class="mt-1 block w-full border border-gray-600 rounded-md bg-gray-800 text-white" readonly />
         </div>
-        <form method="post" asp-action="SubmitManualDetection" asp-controller="ManualDirection">
+        <form id="manualDetectionForm" method="post" asp-action="SubmitManualDetection" asp-controller="ManualDirection">
             @Html.AntiForgeryToken()
             <input type="hidden" id="formDeviceId" name="DeviceId" />
             <input type="hidden" id="formHornetDirection" name="HornetDirection" />
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-300">Number of Hornets Spotted:</label>
-                <input type="number" id="numberOfHornets" name="NumberOfHornets" class="mt-1 block w-full border border-gray-600 rounded-md bg-gray-800 text-white" placeholder="Optional (default 1)" />
+                <input type="number" id="numberOfHornets" name="ManualDetectionInput.NumberOfHornets" class="mt-1 block w-full border border-gray-600 rounded-md bg-gray-800 text-white" placeholder="Example 4" required />
+                <span id="error-numberOfHornets" class="text-red-500 text-sm hidden">Number of Hornets is required.</span>
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-300">Flight Time (minutes):</label>
-                <input type="number" step="0.1" id="flightTimeMinutes" name="FlightTimeMinutes" class="mt-1 block w-full border border-gray-600 rounded-md bg-gray-800 text-white" placeholder="Optional (default 0.5)" />
+                <input type="number" step="0.1" id="flightTimeMinutes" name="ManualDetectionInput.FlightTimeMinutes" class="mt-1 block w-full border border-gray-600 rounded-md bg-gray-800 text-white" placeholder="Example 3)" required />
+                <span id="error-flightTimeMinutes" class="text-red-500 text-sm hidden">Flight Time is required.</span>
             </div>
             <div class="flex justify-end space-x-2">
                 <button type="button" class="bg-gray-600 text-white px-4 py-2 rounded" onclick="closeModal()">Cancel</button>
-                <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded" onclick="confirmDirection()">Confirm</button>
+                <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded">Confirm</button>
             </div>
         </form>
         <p class="mt-2 text-sm text-gray-300">
@@ -116,7 +118,7 @@ ViewData["Title"] = "Set Hornet Direction";
 </div>
 
 @section Scripts {
-<script>
+    <script>
     function confirmDelete(detectionId) {
         Swal.fire({
             title: "Are you sure?",
@@ -272,17 +274,41 @@ ViewData["Title"] = "Set Hornet Direction";
         }
     }
 
-    function confirmDirection() {
+    // Handle form submission and validation
+    document.getElementById('manualDetectionForm').addEventListener('submit', function (e) {
+        e.preventDefault(); // Prevent the form from submitting immediately
+
         // Convert the current bearing to a string with one decimal place
         // and replace the dot with a comma so it matches the server's expected format.
         var directionStr = currentBearing.toFixed(1).replace('.', ',');
         document.getElementById('formHornetDirection').value = directionStr;
-        if (modalMap) {
-            modalMap.off('mousemove', onModalMapMouseMove);
-            modalMap.off('click', onModalMapClick);
+
+        // Validate the form
+        let isValid = true;
+
+        // Validate Number of Hornets
+        const numberOfHornets = document.getElementById('numberOfHornets');
+        if (!numberOfHornets.value) {
+            document.getElementById('error-numberOfHornets').classList.remove('hidden');
+            isValid = false;
+        } else {
+            document.getElementById('error-numberOfHornets').classList.add('hidden');
         }
-        closeModal();
-    }
+
+        // Validate Flight Time
+        const flightTimeMinutes = document.getElementById('flightTimeMinutes');
+        if (!flightTimeMinutes.value) {
+            document.getElementById('error-flightTimeMinutes').classList.remove('hidden');
+            isValid = false;
+        } else {
+            document.getElementById('error-flightTimeMinutes').classList.add('hidden');
+        }
+
+        if (isValid) {
+            // If the form is valid, submit it
+            this.submit();
+        }
+    });
 
     function closeModal() {
         if (modalMap) {
@@ -294,7 +320,7 @@ ViewData["Title"] = "Set Hornet Direction";
         document.getElementById('directionModal').classList.add('hidden');
     }
 </script>
-<style>
+    <style>
     .arrow-icon {
         background: transparent;
     }

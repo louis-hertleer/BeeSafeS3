@@ -86,7 +86,7 @@ ViewData["Title"] = "Edit Devices";
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-300" for="modal-latitude">Latitude</label>
                     <div id="error-latitude" class="text-red-500 text-sm hidden">Latitude is required.</div>
-                    <input type="number" id="modal-latitude" name="latitude"
+                    <input type="number" id="modal-latitude" name="latitude" step="any"
                            class="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-800 text-white"
                            oninput="document.getElementById('error-latitude').classList.add('hidden');" />
                 </div>
@@ -94,7 +94,7 @@ ViewData["Title"] = "Edit Devices";
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-300" for="modal-longitude">Longitude</label>
                     <div id="error-longitude" class="text-red-500 text-sm hidden">Longitude is required.</div>
-                    <input type="number" id="modal-longitude" name="longitude"
+                    <input type="number" id="modal-longitude" name="longitude" step="any"
                            class="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-800 text-white"
                            oninput="document.getElementById('error-longitude').classList.add('hidden');" />
                 </div>
@@ -102,7 +102,7 @@ ViewData["Title"] = "Edit Devices";
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-300" for="modal-direction">Direction</label>
                     <div id="error-direction" class="text-red-500 text-sm hidden">Direction is required.</div>
-                    <input type="number" id="modal-direction" name="direction"
+                    <input type="number" id="modal-direction" name="direction" step="any"
                            class="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-800 text-white"
                            oninput="document.getElementById('error-direction').classList.add('hidden');" />
                 </div>

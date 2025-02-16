@@ -1,0 +1,120 @@
+@model BeeSafeWeb.Models.NestCalculationSettingsViewModel
+
+@{
+    ViewData["Title"] = "Nest Calculation Settings";
+}
+
+<h1 class="text-3xl font-bold mb-4">Nest Calculation Settings</h1>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="bg-green-500 text-white p-4 rounded mb-4">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<form asp-action="Update" method="post" class="space-y-4">
+    <div>
+        <label class="block text-sm font-medium">
+            Hornet Speed (m/s):
+            <span class="ml-2 cursor-pointer text-blue-500" onclick="showInfo('HornetSpeed')">[?]</span>
+        </label>
+        <input asp-for="HornetSpeed" class="mt-1 block w-full p-2 border rounded-md text-black" type="number" step="0.01" />
+        <span asp-validation-for="HornetSpeed" class="text-red-500"></span>
+    </div>
+    <div>
+        <label class="block text-sm font-medium">
+            Correction Factor:
+            <span class="ml-2 cursor-pointer text-blue-500" onclick="showInfo('CorrectionFactor')">[?]</span>
+        </label>
+        <input asp-for="CorrectionFactor" class="mt-1 block w-full p-2 border rounded-md text-black" type="number" step="0.01" />
+        <span asp-validation-for="CorrectionFactor" class="text-red-500"></span>
+    </div>
+    <div>
+        <label class="block text-sm font-medium">
+            Geo Threshold (m):
+            <span class="ml-2 cursor-pointer text-blue-500" onclick="showInfo('GeoThreshold')">[?]</span>
+        </label>
+        <input asp-for="GeoThreshold" class="mt-1 block w-full p-2 border rounded-md text-black" type="number" step="1" />
+        <span asp-validation-for="GeoThreshold" class="text-red-500"></span>
+    </div>
+    <div>
+        <label class="block text-sm font-medium">
+            Direction Bucket Size (°):
+            <span class="ml-2 cursor-pointer text-blue-500" onclick="showInfo('DirectionBucketSize')">[?]</span>
+        </label>
+        <input asp-for="DirectionBucketSize" class="mt-1 block w-full p-2 border rounded-md text-black" type="number" step="0.1" />
+        <span asp-validation-for="DirectionBucketSize" class="text-red-500"></span>
+    </div>
+    <div>
+        <label class="block text-sm font-medium">
+            Direction Threshold (°):
+            <span class="ml-2 cursor-pointer text-blue-500" onclick="showInfo('DirectionThreshold')">[?]</span>
+        </label>
+        <input asp-for="DirectionThreshold" class="mt-1 block w-full p-2 border rounded-md text-black" type="number" step="0.1" />
+        <span asp-validation-for="DirectionThreshold" class="text-red-500"></span>
+    </div>
+    <div>
+        <label class="block text-sm font-medium">
+            Overlap Threshold:
+            <span class="ml-2 cursor-pointer text-blue-500" onclick="showInfo('OverlapThreshold')">[?]</span>
+        </label>
+        <input asp-for="OverlapThreshold" class="mt-1 block w-full p-2 border rounded-md text-black" type="number" step="0.01" />
+        <span asp-validation-for="OverlapThreshold" class="text-red-500"></span>
+    </div>
+    <div>
+        <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded">Update Settings</button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        // This function shows an informational popup using SweetAlert2 when the info icon is clicked.
+        function showInfo(settingKey) {
+            let title = "";
+            let text = "";
+            switch (settingKey) {
+                case "HornetSpeed":
+                    title = "Hornet Speed (m/s)";
+                    text = "This value represents the average speed of a hornet in meters per second. Changing this value will affect the estimated distance a hornet travels during a detection event.";
+                    break;
+                case "CorrectionFactor":
+                    title = "Correction Factor";
+                    text = "A multiplier that adjusts the calculated distance. A higher value increases the estimated distance, while a lower value decreases it.";
+                    break;
+                case "GeoThreshold":
+                    title = "Geo Threshold (m)";
+                    text = "The maximum geographic distance (in meters) for two nest estimates to be considered part of the same cluster.";
+                    break;
+                case "ReverseBearing":
+                    title = "Reverse Bearing";
+                    text = "If enabled, the bearing from detection events will be reversed (i.e., 180° added) when calculating nest locations.";
+                    break;
+                case "DirectionBucketSize":
+                    title = "Direction Bucket Size (°)";
+                    text = "The size of the angular bucket used for grouping nest estimates by direction. Smaller values yield more precise grouping.";
+                    break;
+                case "DirectionThreshold":
+                    title = "Direction Threshold (°)";
+                    text = "The maximum allowed difference in degrees within a group for nest estimates to be merged.";
+                    break;
+                case "OverlapThreshold":
+                    title = "Overlap Threshold";
+                    text = "The ratio threshold determining how much two clusters must overlap to be merged into one.";
+                    break;
+                default:
+                    title = "Information";
+                    text = "No additional information available.";
+                    break;
+            }
+            Swal.fire({
+                title: title,
+                text: text,
+                icon: "info",
+                background: "#1f2937", // Dark background
+                color: "#ffffff",      // White text
+                confirmButtonColor: "#facc15" // Yellow confirm button
+            });
+        }
+    </script>
+}
