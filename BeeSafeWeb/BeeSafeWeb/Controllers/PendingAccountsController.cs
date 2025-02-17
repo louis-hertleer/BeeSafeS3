@@ -1,9 +1,11 @@
 using BeeSafeWeb.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BeeSafeWeb.Controllers;
 
+[Authorize]
 public class PendingAccountsController : Controller
 {
     private readonly UserManager<IdentityUser> _userManager;
