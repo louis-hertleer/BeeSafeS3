@@ -45,23 +45,29 @@
                                 <span id="direction-@device.Id">@device.Direction</span>
                             </td>
                             <td class="py-3 px-4 text-center">
-                                <!-- Pass device details via data attributes -->
-                                <button class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition duration-200"
-                                        onclick="openModal(this)"
-                                        data-id="@device.Id"
-                                        data-name="@device.Name"
-                                        data-lat="@device.Latitude"
-                                        data-lng="@device.Longitude"
-                                        data-dir="@device.Direction">
-                                    Set Device
+                                <div class="flex justify-center space-x-2">
+                                    <!-- "Set Device" Button -->
+                                    <button class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition duration-200"
+                                            onclick="openModal(this)"
+                                            data-id="@device.Id"
+                                            data-name="@device.Name"
+                                            data-lat="@device.Latitude"
+                                            data-lng="@device.Longitude"
+                                            data-dir="@device.Direction">
+                                        Set Device
+                                    </button>
 
-                                </button>
-                                <button class="bg-red-700 text-white px-6 py-3 rounded hover:bg-yellow-600 transition duration-200"
-                                        asp-action="RejectDevice" asp-controller="Approvals" asp-route-id="@device.Id">
-                                    Reject
-
-                                </button>
+                                    <!-- "Reject" Button Form -->
+                                    <form id="deleteForm-@device.Id" asp-action="RejectDevice" asp-controller="Approvals" method="post">
+                                        <input type="hidden" name="id" value="@device.Id" />
+                                        <button type="button" class="bg-red-700 text-white px-6 py-3 rounded hover:bg-red-800 transition duration-200"
+                                                onclick="confirmDelete('@device.Id')">
+                                            Reject
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
+
                         </tr>
                     }
                 </tbody>
@@ -137,7 +143,7 @@
 <!-- Sow toast message when adding device is succeeded -->
 @if (TempData["SuccessMessage"] != null)
 {
-<script>
+    <script>
     Swal.fire({
         position: 'top-end',
         icon: 'success',
@@ -152,8 +158,35 @@
             title: 'swal-title-custom'
         }
     });
+    
 </script>
 }
+<script>
+    function confirmDelete(detectionId) {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This action cannot be undone!",
+            icon: "warning",
+            showCancelButton: true,
+            background: "#1f2937", // Dark background (Tailwind gray-800)
+            color: "#ffffff", // White text
+            confirmButtonColor: "#facc15", // Yellow (Tailwind yellow-400)
+            cancelButtonColor: "#6b7280", // Gray (Tailwind gray-500)
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "Cancel",
+            customClass: {
+                popup: "swal-popup-custom",
+                title: "swal-title-custom",
+                confirmButton: "swal-confirm-custom",
+                cancelButton: "swal-cancel-custom"
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.querySelector(`#deleteForm-${detectionId}`).submit();
+            }
+        });
+    }
+</script>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
