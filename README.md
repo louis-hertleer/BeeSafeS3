@@ -28,7 +28,8 @@ view and manage that information in an easy to use web interface.
 
 ### Data Model
 
-![FinalDataModel](https://github.com/user-attachments/assets/7b7e186c-ee51-4407-9e6b-eda15702a260)
+<img width="70%" style="float:center;" src="https://github.com/user-attachments/assets/7b7e186c-ee51-4407-9e6b-eda15702a260">
+
 
 
 ## Setup
@@ -137,7 +138,33 @@ If enough data is collected, the application will make a prediction on where the
 To see your own registered traps, you will need to have an account and register devices:
 
 
-<img width="65%" style="float:center;" src="https://github.com/user-attachments/assets/e077132a-4cdf-41ed-8545-2e403413072a">
+<img width="65%" style="float:center;" src="https://github.com/user-attachments/assets/b233da88-b94e-4b0f-a22c-7c88fa12cd81">
+
+U can manually add hornet detections on the hornet detection page where u enter the direction amount of hornets and minutes it takes for the hornet to come back
+
+<img width="75%" style="float:center;" src="https://github.com/user-attachments/assets/cb20495c-040f-4b16-9605-0a81daa48cae">
+
+<img width="65%" style="float:center;" src="https://github.com/user-attachments/assets/b7f28f83-fc52-47f9-af6a-c4e6433baf7d">
+
+On the pending devices page u can see devices that were turned on but have not yet been added to the application. U can eather reject the device or set it's location and add it to the application.
+
+<img width="65%" style="float:center;" src="https://github.com/user-attachments/assets/791fa9de-e0cc-4ff1-a512-a92248ef2502">
+
+<img width="65%" style="float:center;" src="https://github.com/user-attachments/assets/0eba4046-dd9c-4181-8ecf-ed45337d7051">
+
+The device locations, direction it's facing and name can also be cahanged on the edit device page using the same form.
+
+On the Hornet Calculation page we added the parameters used for calculating the hornets nest location. these parameters can be changed in here to fine tune the predictions.
+
+<img width="65%" style="float:center;" src="https://github.com/user-attachments/assets/6e1dc25f-e2e6-4be4-be9e-73207205e8e1">
+
+We also provided a way for users to request an account, on the register page u can request an account. An admin then has to approve the account before ur able to login to the application. An account can also be rejected u won't be able to login if thats the case.
+
+<img width="35%" style="float:center;" src="https://github.com/user-attachments/assets/b05066c8-5cba-46d6-8c36-940dc1a55878">
+
+<img width="75%" style="float:center;" src="https://github.com/user-attachments/assets/150dd234-4083-4341-a2a6-91927a647286">
+
+
 
 # Nest Calculation Explanation
 
