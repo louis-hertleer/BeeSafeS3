@@ -221,9 +221,23 @@ It should be connected to Wifi or a mobile connection with a 4G adapter.
 A webcam should be connected as well to be able to run the AI model.
 Once put in a weather-proof case, it can be used outside
 
-## YOLO (AI hornet detection)
+## You Only Look Once (YOLO) - AI hornet detection
 To be able to detect the hornets infront of the device, the solution uses a trained YOLO AI model.
-The model uses YOLO V11 with SAHI. It runs on the Raspberry Pi and will send data to the application
+The model uses YOLOv11. It runs on the Raspberry Pi and will send data to the application. 
+
+1. Data Collection & Labelling
+We began by capturing frames (taking screenshots) from the provided videos to create a dataset for training our object detection model. These frames were then labelled using [Label Studio](https://labelstud.io/guide/), an upen-soruce tool designed for labelling images and videos. 
+During this process, we focused solely on labelling Asian Hornets in the frames. Each hornet was marked with a bounding box which indicates the location of the hornet within the image. A class name was also assigned to each labeled object, in this case, “Asian Hornet.” The class name is used to distinguish different objects in the dataset (in our case, it’s just one class—Asian Hornet).
+After labeling, we exported both the images and the annotations (labels) using the YOLO format. This format includes the class name and the bounding box coordinates for each Asian Hornet. All images were stored in Google Drive, utilizing premium storage due to the large volume of data.
+
+2. Training with YOLOv11
+For model training, we used YOLOv11. Specifically, we trained the model using the YOLOv11n version, which is a lighter, faster variant optimized for smaller-scale datasets.
+Training was conducted on Google Colab, a cloud-based platform that provides free access to GPUs, making it easier to train deep learning models.
+
+To facilitate training, we created a data.yaml file, which defines the paths to our training and validation datasets and lists the class names. The dataset from Step 1 was split into two parts:
+    - Training Set: The majority of the labeled images used to teach the model.
+    - Validation Set: A smaller set of images used to test and validate the model's performance during training.
+These datasets were organized into a folder named dataset, where the images and their respective labels were stored.
 
 ## Pipeline
 The application is being build and provisioned automatically through GitHub Actions
