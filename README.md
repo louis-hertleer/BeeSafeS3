@@ -229,7 +229,6 @@ Once put in a weather-proof case, it can be used outside
 Below is a wiring diagram on how our prototype is wired:
 <img width="65%" style="float:center;" src="https://github.com/user-attachments/assets/6fabbbda-4b46-408d-94d8-fa051c04c524">
 
-
 ## You Only Look Once (YOLO) - AI hornet detection
 To be able to detect the hornets infront of the device, the solution uses a trained YOLO AI model.
 The model uses YOLOv11. It runs on the Raspberry Pi and will send data to the application. 

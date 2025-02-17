@@ -1,9 +1,11 @@
 using BeeSafeWeb.Data;
 using BeeSafeWeb.Utility.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BeeSafeWeb.Controllers;
 
+[Authorize]
 public class DetectionController : Controller
 {
     private readonly IRepository<DetectionEvent> _detectionEventRepository;
