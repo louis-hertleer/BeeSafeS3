@@ -12,7 +12,7 @@ public class SetupModel : PageModel
     private readonly IUserStore<IdentityUser> _userStore;
     private readonly IUserEmailStore<IdentityUser> _userEmailStore;
     private readonly UserManager<IdentityUser> _userManager;
-    
+
     [BindProperty] 
     public RegisterModel.InputModel Input { get; set; }
 

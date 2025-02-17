@@ -54,4 +54,13 @@ public class GenericRepository<T> : IRepository<T> where T : class
     {
         return _table.AsQueryable();
     }
+    
+    public void Detach(T entity)
+    {
+        var entry = _context.Entry(entity);
+        if (entry != null)
+        {
+            entry.State = EntityState.Detached; // Removes the entity from tracking
+        }
+    }
 }

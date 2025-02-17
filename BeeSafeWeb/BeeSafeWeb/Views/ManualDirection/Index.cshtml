@@ -1,34 +1,29 @@
-@model IEnumerable<BeeSafeWeb.Utility.Models.Device>
+@model BeeSafeWeb.Models.ManualDirectionIndexViewModel
 
 @{
+Layout = "_Layout";
 ViewData["Title"] = "Set Hornet Direction";
 }
 
 <h1 class="text-3xl font-bold mb-4">Set Hornet Direction</h1>
 
-<!-- Device List -->
+<!-- Device List Section -->
 <div class="mb-6">
     <h2 class="text-xl font-semibold mb-2">Devices</h2>
     <table class="min-w-full border">
         <thead>
         <tr>
             <th class="border p-2">Name</th>
-            <th class="border p-2">Location</th>
             <th class="border p-2">Action</th>
         </tr>
         </thead>
         <tbody>
-        @foreach (var device in Model)
+        @foreach (var device in Model.Devices)
         {
         <tr>
-            <td class="border p-2">@device.Name</td>
-            <td class="border p-2">
-                @device.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                @device.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)
-            </td>
-            <td class="border p-2">
-                <!-- Pass the device's current Direction as well -->
-                <button type="button" class="bg-blue-500 text-white px-3 py-1 rounded"
+            <td class="border p-2 text-center">@device.Name</td>
+            <td class="border p-2 text-center">
+                <button type="button" class="bg-yellow-500 text-white px-3 py-1 rounded"
                         onclick="openDirectionModal(
                             '@device.Id',
                         @device.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture),
@@ -45,34 +40,74 @@ ViewData["Title"] = "Set Hornet Direction";
     </table>
 </div>
 
+<!-- Manual Detections Management Section -->
+<div class="mb-6">
+    <h2 class="text-xl font-semibold mb-2">Manage Manual Detections</h2>
+    @if (Model.ManualDetections.Any())
+    {
+    <table class="min-w-full border-collapse border">
+        <thead>
+        <tr>
+            <th class="border p-2">Device</th>
+            <th class="border p-2">Hornet Direction</th>
+            <th class="border p-2">Hornet Count</th>
+            <th class="border p-2">Timestamp</th>
+            <th class="border p-2">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var detection in Model.ManualDetections)
+        {
+        <tr>
+            <td class="border p-2 text-center">@detection.Device?.Name</td>
+            <td class="border p-2 text-center">@detection.HornetDirection</td>
+            <td class="border p-2 text-center">@detection.HornetCount</td>
+            <td class="border p-2 text-center">@detection.SecondDetection.ToString("g")</td>
+            <td class="border p-2 text-center">
+                <form id="deleteForm-@detection.Id" asp-controller="ManualDirection" asp-action="Delete" asp-route-id="@detection.Id" method="post" class="inline-block ml-2">
+                    @Html.AntiForgeryToken()
+                    <button type="button" class="bg-red-500 text-white px-3 py-1 rounded" onclick="confirmDelete('@detection.Id')">
+                        Delete
+                    </button>
+                </form>
+            </td>
+        </tr>
+        }
+        </tbody>
+    </table>
+    }
+    else
+    {
+    <p class="text-gray-500">No manual detections have been added yet.</p>
+    }
+</div>
+
 <!-- Modal for setting hornet direction and manual detection data -->
 <div id="directionModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden flex items-center justify-center">
     <div class="bg-gray-900 rounded-lg p-6 w-11/12 md:w-1/2 lg:w-1/3">
         <h2 class="text-xl font-bold mb-4 text-white" id="modalTitle">Set Hornet Direction</h2>
-        <!-- Map inside the modal -->
         <div id="modalMap" class="w-full h-[300px] rounded mb-4"></div>
-        <!-- Display the current (manual override) direction -->
         <div class="mb-4">
             <label class="block text-sm font-medium text-gray-300">Current Direction (degrees):</label>
             <input type="number" id="currentDirection" class="mt-1 block w-full border border-gray-600 rounded-md bg-gray-800 text-white" readonly />
         </div>
-        <!-- Additional inputs for manual detection data -->
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-300">Number of Hornets Spotted:</label>
-            <input type="number" id="numberOfHornets" name="NumberOfHornets" class="mt-1 block w-full border border-gray-600 rounded-md bg-gray-800 text-white" placeholder="Optional (default 1)" />
-        </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-300">Flight Time (minutes):</label>
-            <input type="number" step="0.1" id="flightTimeMinutes" name="FlightTimeMinutes" class="mt-1 block w-full border border-gray-600 rounded-md bg-gray-800 text-white" placeholder="Optional (default 0.5)" />
-        </div>
-        <!-- Form for confirming the manual detection -->
-        <form method="post" asp-action="SubmitManualDetection" asp-controller="ManualDirection">
+        <form id="manualDetectionForm" method="post" asp-action="SubmitManualDetection" asp-controller="ManualDirection">
             @Html.AntiForgeryToken()
             <input type="hidden" id="formDeviceId" name="DeviceId" />
             <input type="hidden" id="formHornetDirection" name="HornetDirection" />
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-300">Number of Hornets Spotted:</label>
+                <input type="number" id="numberOfHornets" name="ManualDetectionInput.NumberOfHornets" class="mt-1 block w-full border border-gray-600 rounded-md bg-gray-800 text-white" placeholder="Example 4" required />
+                <span id="error-numberOfHornets" class="text-red-500 text-sm hidden">Number of Hornets is required.</span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-300">Flight Time (minutes):</label>
+                <input type="number" step="0.1" id="flightTimeMinutes" name="ManualDetectionInput.FlightTimeMinutes" class="mt-1 block w-full border border-gray-600 rounded-md bg-gray-800 text-white" placeholder="Example 3)" required />
+                <span id="error-flightTimeMinutes" class="text-red-500 text-sm hidden">Flight Time is required.</span>
+            </div>
             <div class="flex justify-end space-x-2">
                 <button type="button" class="bg-gray-600 text-white px-4 py-2 rounded" onclick="closeModal()">Cancel</button>
-                <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded" onclick="confirmDirection()">Confirm</button>
+                <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded">Confirm</button>
             </div>
         </form>
         <p class="mt-2 text-sm text-gray-300">
@@ -83,12 +118,45 @@ ViewData["Title"] = "Set Hornet Direction";
 </div>
 
 @section Scripts {
-<script>
+    <script>
+    function confirmDelete(detectionId) {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This action cannot be undone!",
+            icon: "warning",
+            showCancelButton: true,
+            background: "#1f2937", // Dark background (Tailwind gray-800)
+            color: "#ffffff", // White text
+            confirmButtonColor: "#facc15", // Yellow (Tailwind yellow-400)
+            cancelButtonColor: "#6b7280", // Gray (Tailwind gray-500)
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "Cancel",
+            customClass: {
+                popup: "swal-popup-custom",
+                title: "swal-title-custom",
+                confirmButton: "swal-confirm-custom",
+                cancelButton: "swal-cancel-custom"
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.querySelector(`#deleteForm-${detectionId}`).submit();
+            }
+        });
+    }
+
+    // Icon for device marker.
+    var cameraIcon = L.icon({
+        iconUrl: '/assets/photo-camera.svg',
+        iconSize: [30, 30],
+        iconAnchor: [10, 20],
+        popupAnchor: [0, -35]
+    });
+
     // Global variables for the modal map and state.
     var modalMap = null, deviceLat, deviceLng, currentBearing = 0;
     var arrowLocked = false, currentDeviceId = null;
     var arrowMarker = null;
-    var fovPolygon = null; // For the fixed FOV display
+    var fovPolygon = null; // For the fixed FOV display.
 
     // Utility functions for degree/radian conversion.
     function toRadians(deg) {
@@ -97,7 +165,7 @@ ViewData["Title"] = "Set Hornet Direction";
     function toDegrees(rad) {
         return rad * (180 / Math.PI);
     }
-    // Calculate bearing from (lat1, lng1) to (lat2, lng2)
+    // Calculate bearing from (lat1, lng1) to (lat2, lng2).
     function calculateBearing(lat1, lng1, lat2, lng2) {
         var φ1 = toRadians(lat1);
         var φ2 = toRadians(lat2);
@@ -110,13 +178,13 @@ ViewData["Title"] = "Set Hornet Direction";
 
     // Create a polygon representing the device's fixed field-of-view.
     function createFOVPolygon(center, direction) {
-        const fovAngle = 40; // Fixed FOV angle in degrees
-        const fovDistance = 0.0005; // Fixed distance (adjust as needed)
+        const fovAngle = 40; // Fixed FOV angle in degrees.
+        const fovDistance = 0.0005; // Fixed distance (adjust as needed).
         let startAngle = direction - fovAngle / 2;
         let endAngle = direction + fovAngle / 2;
         let points = [center];
         for (let angle = startAngle; angle <= endAngle; angle += 5) {
-            let rad = angle * (Math.PI / 180);
+            let rad = toRadians(angle);
             let latOffset = fovDistance * Math.cos(rad);
             let lngOffset = fovDistance * Math.sin(rad);
             points.push([center.lat + latOffset, center.lng + lngOffset]);
@@ -131,7 +199,6 @@ ViewData["Title"] = "Set Hornet Direction";
     }
 
     // Open the modal: initialize the modal map centered on the selected device.
-    // Added parameter "deviceDirection" (the device's current direction)
     function openDirectionModal(deviceId, lat, lng, deviceName, deviceDirection) {
         currentDeviceId = deviceId;
         deviceLat = parseFloat(lat);
@@ -154,26 +221,24 @@ ViewData["Title"] = "Set Hornet Direction";
         }
 
         // Initialize a new modal map centered on the device.
-        modalMap = L.map('modalMap').setView([deviceLat, deviceLng], 16);
+        modalMap = L.map('modalMap').setView([deviceLat, deviceLng], 17);
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; OpenStreetMap'
         }).addTo(modalMap);
 
         // Add a marker for the device location.
-        L.marker([deviceLat, deviceLng]).addTo(modalMap);
+        L.marker([deviceLat, deviceLng], { icon: cameraIcon }).addTo(modalMap);
 
-        // Add the fixed FOV polygon (using the device's current direction) in grey.
+        // Add the fixed FOV polygon using the device's current direction.
         var center = L.latLng(deviceLat, deviceLng);
         fovPolygon = createFOVPolygon(center, parseFloat(deviceDirection));
         fovPolygon.addTo(modalMap);
 
-        // Add a line marker (using a divIcon) at the device location for the manual override.
-        // The icon is a 2px x 60px red line.
-        // iconAnchor is set to [1, 0] so that the top-center of the line is anchored at the device.
+        // Add a red arrow for manual override.
         var arrowIcon = L.divIcon({
             className: 'arrow-icon',
-            html: '<div id="arrow" style="width:2px; height:60px; background:red; transform-origin: 50% 0% !important;"></div>',
+            html: '<div id="arrow" style="width:2px; height:80px; background:red; transform-origin: 50% 0% !important;"></div>',
             iconSize: [2, 60],
             iconAnchor: [1, 0]
         });
@@ -181,7 +246,7 @@ ViewData["Title"] = "Set Hornet Direction";
 
         // Listen for mouse move events on the modal map.
         modalMap.on('mousemove', onModalMapMouseMove);
-        // Listen for click events on the modal map to toggle lock.
+        // Listen for click events on the modal map to toggle the arrow lock.
         modalMap.on('click', onModalMapClick);
     }
 
@@ -209,15 +274,41 @@ ViewData["Title"] = "Set Hornet Direction";
         }
     }
 
-    function confirmDirection() {
-        // Replace the period with a comma so that the decimal separator is correct.
-        document.getElementById('formHornetDirection').value = currentBearing.toFixed(1).replace('.', ',');
-        if (modalMap) {
-            modalMap.off('mousemove', onModalMapMouseMove);
-            modalMap.off('click', onModalMapClick);
+    // Handle form submission and validation
+    document.getElementById('manualDetectionForm').addEventListener('submit', function (e) {
+        e.preventDefault(); // Prevent the form from submitting immediately
+
+        // Convert the current bearing to a string with one decimal place
+        // and replace the dot with a comma so it matches the server's expected format.
+        var directionStr = currentBearing.toFixed(1).replace('.', ',');
+        document.getElementById('formHornetDirection').value = directionStr;
+
+        // Validate the form
+        let isValid = true;
+
+        // Validate Number of Hornets
+        const numberOfHornets = document.getElementById('numberOfHornets');
+        if (!numberOfHornets.value) {
+            document.getElementById('error-numberOfHornets').classList.remove('hidden');
+            isValid = false;
+        } else {
+            document.getElementById('error-numberOfHornets').classList.add('hidden');
         }
-        closeModal();
-    }
+
+        // Validate Flight Time
+        const flightTimeMinutes = document.getElementById('flightTimeMinutes');
+        if (!flightTimeMinutes.value) {
+            document.getElementById('error-flightTimeMinutes').classList.remove('hidden');
+            isValid = false;
+        } else {
+            document.getElementById('error-flightTimeMinutes').classList.add('hidden');
+        }
+
+        if (isValid) {
+            // If the form is valid, submit it
+            this.submit();
+        }
+    });
 
     function closeModal() {
         if (modalMap) {
@@ -229,7 +320,7 @@ ViewData["Title"] = "Set Hornet Direction";
         document.getElementById('directionModal').classList.add('hidden');
     }
 </script>
-<style>
+    <style>
     .arrow-icon {
         background: transparent;
     }

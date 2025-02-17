@@ -24,6 +24,7 @@ public class DeviceController : Controller
     {
         Device device = new()
         {
+            Name = "",
             Longitude = request.Longitude,
             Latitude = request.Latitude,
             Direction = request.Direction,

@@ -1,0 +1,144 @@
+@{
+Layout = "_Layout";
+var devices = Model;
+ViewData["Title"] = "Edit Devices";
+
+}
+
+<h1 class="text-3xl font-bold mb-4 p-4">Edit Devices</h1>
+
+<div class="p-4">
+    <table class="min-w-full bg-white dark:bg-gray-800 rounded-lg shadow-md text-sm sm:text-lg">
+        <thead class="bg-gray-200 dark:bg-gray-700 text-center">
+        <tr>
+            <th class="py-3 px-4 border">Name</th>
+            <th class="py-3 px-4 border">Latitude</th>
+            <th class="py-3 px-4 border">Longitude</th>
+            <th class="py-3 px-4 border">Direction</th>
+            <th class="py-3 px-4 border">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var device in devices)
+        {
+        <tr class="text-center border-t">
+            <td class="px-4">
+                <span id="name-@device.Id">@device.Name</span>
+            </td>
+            <td class="px-4">
+                <span id="latitude-@device.Id">@device.Latitude</span>
+            </td>
+            <td class="px-4">
+                <span id="longitude-@device.Id">@device.Longitude</span>
+            </td>
+            <td class="px-4">
+                <span id="direction-@device.Id">@device.Direction</span>
+            </td>
+            <td class="py-3 px-4">
+                <button type="button"
+                        class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition duration-200"
+                        onclick="openModal(this)"
+                        data-id="@device.Id"
+                        data-name="@device.Name"
+                        data-lat="@device.Latitude"
+                        data-lng="@device.Longitude"
+                        data-dir="@device.Direction">
+                    Edit
+                </button>
+            </td>
+        </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<!-- Edit Device Modal -->
+<div id="location-modal"
+     class="fixed inset-0 z-50 bg-gray-800 bg-opacity-50 hidden overflow-y-auto"
+     onclick="if(event.target === this){ closeModal(); }">
+    <div class="min-h-screen flex items-center justify-center">
+        <div class="bg-gray-900 rounded-lg p-4 sm:p-6 w-11/12 max-w-[60%] max-h-[90vh] overflow-y-auto">
+            <h2 class="text-xl font-bold mb-4 text-white">Edit Device</h2>
+            <!-- Search Field -->
+            <div class="mb-4">
+                <input type="text" id="city-search" placeholder="Search city name in Belgium"
+                       class="w-full p-2 border border-gray-600 rounded-md bg-gray-800 text-white"
+                       onkeypress="handleKeyPress(event)" />
+                <button type="button" onclick="searchCity()"
+                        class="mt-2 w-full bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+                    Search
+                </button>
+            </div>
+            <!-- Map -->
+            <div id="map" class="w-full h-[300px] rounded mb-4"></div>
+            <!-- Form Fields -->
+            <form id="edit-device-form" method="post" action="@Url.Action("Update", "EditDevices")" onsubmit="return validateModalForm();">
+                <input type="hidden" name="id" id="modal-id" value="" />
+                <!-- Name Field -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300" for="modal-name">Name</label>
+                    <div id="error-name" class="text-red-500 text-sm hidden">Name is required.</div>
+                    <input type="text" id="modal-name" name="name"
+                           class="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-800 text-white"
+                           oninput="document.getElementById('error-name').classList.add('hidden');" />
+                </div>
+                <!-- Latitude Field -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300" for="modal-latitude">Latitude</label>
+                    <div id="error-latitude" class="text-red-500 text-sm hidden">Latitude is required.</div>
+                    <input type="number" id="modal-latitude" name="latitude" step="any"
+                           class="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-800 text-white"
+                           oninput="document.getElementById('error-latitude').classList.add('hidden');" />
+                </div>
+                <!-- Longitude Field -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300" for="modal-longitude">Longitude</label>
+                    <div id="error-longitude" class="text-red-500 text-sm hidden">Longitude is required.</div>
+                    <input type="number" id="modal-longitude" name="longitude" step="any"
+                           class="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-800 text-white"
+                           oninput="document.getElementById('error-longitude').classList.add('hidden');" />
+                </div>
+                <!-- Direction Field -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300" for="modal-direction">Direction</label>
+                    <div id="error-direction" class="text-red-500 text-sm hidden">Direction is required.</div>
+                    <input type="number" id="modal-direction" name="direction" step="any"
+                           class="mt-1 block w-full p-2 border border-gray-600 rounded-md bg-gray-800 text-white"
+                           oninput="document.getElementById('error-direction').classList.add('hidden');" />
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" class="bg-gray-600 text-white px-4 py-2 rounded" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Sow toast message when update is succeeded -->
+@if (TempData["SuccessMessage"] != null)
+{
+<script>
+    Swal.fire({
+        position: 'top-end',
+        icon: 'success',
+        title: '@TempData["SuccessMessage"]',
+        toast: true,
+        showConfirmButton: false,
+        timer: 2500,
+        background: '#1f3555', 
+        color: '#ffffff',      
+        customClass: {
+            popup: 'swal-popup-custom',
+            title: 'swal-title-custom'
+        }
+    });
+</script>
+}
+
+@section Scripts {
+<script src="~/js/device.js"></script>
+
+}

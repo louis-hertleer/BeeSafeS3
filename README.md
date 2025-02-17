@@ -13,6 +13,99 @@ It will track hornet activity and try to calculate a nest location with directio
 If the IoT device is attached to an electric harp, it will trigger it if an hornet is detected in the FOV.
 The electric harp will attempt to kill the hornet if it flies through the trap.
 
+## Architecture
+Our solution consists of two parts: the web application, which is the user interface for the end users,
+and the device code which runs on the Raspberry Pi.
+
+### Device code
+This component of the solution is written in Python. It runs the AI model, takes images from the video feed and
+constantly sends messages to the web application.
+
+### Web application
+This component of the solution is written in C#, with ASP.NET. This collects the data from the devices,
+performing the predictions of the hornet nests from that data, and allows the user of our solution to easily
+view and manage that information in an easy to use web interface.
+
+## Setup
+In this section, we will go over how to set up our solution.
+
+### Device code
+The code of this component is located in the `device-code` folder in this repository.
+
+You will need a Raspberry Pi 4 as a device, with any UVC compatible webcam (generally any USB webcam/camera will
+work) as the camera. You will also need an `ssh` connection with the Raspberry Pi.
+
+#### Steps
+> [!NOTE]  
+> Commands that are run with the regular user are prefixed with `$` should be run with the regular user,
+> commands prefixed with `#` are to be run as root, such as with `sudo`.
+
+Clone this GitHub repository as follows, and enter into the directory:
+```
+$ git clone --depth 1 https://github.com/louis-hertleer/BeeSafeS3
+$ cd BeeSafeS3
+```
+Take a look at `device-code/real-device.py`. Modify the URL variable to your production web application URL
+if it is not correct.
+
+Install the required dependencies with the command below:
+```
+# pip install numpy scipy ultralytics opencv-python
+```
+This will install the dependencies system-wide, as the systemd unit (see below) will run as an unprivileged user.
+If `pip` complains about breaking system packages, override that behavior with the `--break-system-packages` flag.
+
+The systemd unit expects the application to be located in `/opt/beesafe`, so create a folder called "beesafe" in
+the `/opt` directory:
+```
+# mkdir /opt/beesafe
+```
+
+Copy the contents of the `device-code` into the newly created folder, and go to it:
+```
+# cp ./device-code/* /opt/beesafe
+$ cd /opt/beesafe
+```
+Enable the systemd unit, so that it runs on startup:
+```
+# systemctl enable ./beesafe.service
+```
+
+Optionally, you can start it immediately:
+```
+# systemctl start beesafe.service
+```
+
+The device should appear in the "Pending Devices" page. If not, double check whether the URL in `real-device.py` is correct,
+and that there is an outgoing internet connection.
+
+### Web application
+> [!NOTE]  
+> This web application requires Microsoft SQL Server. Using a different database management system requires modification of
+> the code.
+
+The code of this component is located in the `BeeSafeWeb` folder in this repository.
+
+In the `BeeSafeWeb`, there is a Dockerfile which will allow for easy building of the web application. An example command to
+build the Dockerfile (from the root of the repository):
+```
+$ docker build -t beesafe:latest ./BeeSafeWeb
+```
+
+To run the application (exposing container port 80 to host port 8080)
+```
+$ docker run -p 8080:80 beesafe:latest
+```
+
+#### Connecting a database
+Connecting a database to the application is required, as it will crash on startup without one. You can pass a connection
+string to the web application as an environment variable:
+```
+$ docker run -p 8080:80 -e "ConnectionStrings:DefaultConnection"="Server=yourdbhost;User ID=yourusername;Password=yourpassword" beesafe:latest
+```
+> [!WARNING]
+> This specific command may not work on PowerShell for some reason, due to how it handles special characters.
+
 ## BeeSafe Application
 The applications is accessible through a public link given in the pipeline or in our case, hosted on a fixed domain name: <a href="https://beesafe.space/">BeeSafe Application</a>
 Once you register an account, you can add your own IoT devices. 
@@ -41,6 +134,84 @@ To see your own registered traps, you will need to have an account and register 
 
 <img width="65%" style="float:center;" src="https://github.com/user-attachments/assets/e077132a-4cdf-41ed-8545-2e403413072a">
 
+# Nest Calculation Explanation
+
+The nest calculation component of BeeSafeS3 is responsible for processing detection events and predicting the likely location of Asian Hornet nests. This process involves several steps and uses configurable dynamic settings to adjust the behavior of the calculations. Below is an in-depth explanation of how these calculations work.
+
+## Overview
+
+The calculation service processes detection events received from IoT devices. Each detection event contains data such as:
+- **Device Location:** The latitude and longitude where the event was recorded.
+- **Detection Timing:** The time difference between the first and second detection, which represents the hornet’s flight time.
+- **Hornet Direction:** The direction from which the hornet was detected.
+
+Using these data points, the service estimates where a hornet nest might be located by predicting how far and in which direction a hornet may have traveled.
+
+## Dynamic Settings
+
+The service uses several adjustable settings to fine-tune the calculations. These settings are loaded dynamically (from a settings class) and include:
+
+- **Hornet Speed (m/s):**  
+  The average speed at which a hornet flies. This value affects the estimated travel distance during the detection period.
+
+- **Correction Factor:**  
+  A multiplier that adjusts the calculated travel distance. A higher correction factor increases the estimated distance and vice versa.
+
+- **Geo Threshold (m):**  
+  The maximum geographic distance within which two nest estimates are considered overlapping. This threshold is used when clustering individual estimates.
+
+- **Direction Bucket Size (°):**  
+  The angular range used to group nest estimates by their direction. Smaller bucket sizes lead to more precise directional grouping.
+
+- **Direction Threshold (°):**  
+  The maximum allowed difference in direction (within a bucket) for estimates to be merged. Estimates with a smaller difference in direction are more likely to be part of the same cluster.
+
+- **Overlap Threshold:**  
+  The ratio threshold that determines how much the accuracy circles (representing uncertainty) of two estimates must overlap to be merged into a single cluster.
+
+*Note:* The **Reverse Bearing** flag is not dynamic—it is hardcoded. When enabled, it reverses the detected bearing by adding 180° to it.
+
+## Calculation Process
+
+### 1. Data Retrieval & Filtering
+- **Retrieval:**  
+  The service retrieves existing nest estimates and detection events from the database, including related information such as device details and known hornet data.
+- **Filtering:**  
+  Detection events are filtered to ensure they are valid. An event is considered valid if:
+  - It is associated with a device.
+  - It has a known hornet or is marked as a manual event.
+  - The time difference between the first and second detection is positive and does not exceed 20 minutes.
+
+### 2. Individual Nest Estimate Calculation
+For each valid detection event:
+- **Flight Time Calculation:**  
+  The service calculates the flight time in seconds.
+- **Distance Estimation:**  
+  Using the dynamic hornet speed and correction factor, the estimated distance traveled by the hornet is computed.
+- **Direction Processing:**  
+  The detected hornet direction is converted to radians. If the reverse bearing flag is enabled, the bearing is adjusted by 180°.
+- **Location Prediction:**  
+  Spherical trigonometry is applied (using concepts similar to the haversine formula) to predict the new latitude and longitude where the hornet nest might be located.
+- **Nest Estimate Creation:**  
+  A nest estimate is created with the predicted coordinates, an accuracy value based on the estimated distance, and the final adjusted direction.
+
+### 3. Clustering & Refinement
+- **Grouping:**  
+  Individual estimates are first grouped by device (or hornet). Within each group, they are further bucketed by their direction using the dynamic bucket size.
+- **Merging Overlapping Estimates:**  
+  Within each direction bucket, overlapping estimates (those that are both geographically close and similar in direction) are merged.  
+  - The service uses weighted averages (weighted by the inverse square of the display accuracy) to merge overlapping estimates.
+  - The overlap between estimates is quantified by comparing the intersection area of their accuracy circles to the area of the smaller circle. If this overlap ratio exceeds the dynamic overlap threshold, the estimates are merged.
+
+### 4. Final Merging & Persistence
+- **Post-Processing:**  
+  After initial clustering, clusters that are fully contained within each other are merged further.
+- **Output:**  
+  The final merged nest estimates are then saved to the database and are available for further processing by the application (e.g., triggering traps).
+
+## Conclusion
+
+This dynamic and configurable approach enables the BeeSafeS3 system to adapt the nest calculation algorithm in real time. By adjusting these parameters, the accuracy of nest predictions can be fine-tuned based on real-world detection data, ultimately helping local beekeepers respond effectively to Asian Hornet threats.
 
 
 
