@@ -127,8 +127,8 @@ jobs:
               --name beesafe-app-container \
               --resource-group BeeSafe \
               --image docker.io/${{ secrets.DOCKER_USERNAME }}/beesafeapp:latest \
-              --cpu 0.5 \
-              --memory 1.0 \
+              --cpu 2 \
+              --memory 2.0 \
               --registry-server docker.io \
               --registry-username ${{ secrets.DOCKER_USERNAME }} \
               --registry-password ${{ secrets.DOCKER_PASSWORD }} \
