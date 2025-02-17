@@ -6,11 +6,11 @@ on:
       - main
 
 permissions:
-  contents: write
-  issues: write
+  contents: write  # Access the repository contents for checking out code
+  issues: write    # Post issues in the repo (for the ZAP report)
+  actions: read  # Read access to secrets
 
 jobs:
-  # Run Owasp ZAP scan on running application for security testing
   zap_scan:
     runs-on: ubuntu-latest
     steps:
