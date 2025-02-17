@@ -7,6 +7,10 @@ on:
     - '**.cs'
     - '**.csproj'
 
+permissions:
+  contents: read  # Needed to access repository contents for building and testing
+  pull-requests: write  # Allows interaction with PRs (e.g., comment or update status)
+
 jobs:
   build-and-test:
     name: build-and-test
