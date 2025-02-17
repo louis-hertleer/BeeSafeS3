@@ -11,8 +11,5 @@ namespace BeeSafeWeb.Models
     {
         public IEnumerable<Device> Devices { get; set; }
         public IEnumerable<DetectionEvent> ManualDetections { get; set; }
-        
-        public ManualDetectionInputModel ManualDetectionInput { get; set; }
-
     }
 }
