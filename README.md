@@ -26,6 +26,11 @@ This component of the solution is written in C#, with ASP.NET. This collects the
 performing the predictions of the hornet nests from that data, and allows the user of our solution to easily
 view and manage that information in an easy to use web interface.
 
+### Data Model
+
+![FinalDataModel](https://github.com/user-attachments/assets/7b7e186c-ee51-4407-9e6b-eda15702a260)
+
+
 ## Setup
 In this section, we will go over how to set up our solution.
 
