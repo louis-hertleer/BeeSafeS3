@@ -247,6 +247,31 @@ To facilitate training, we created a data.yaml file, which defines the paths to 
     - Validation Set: A smaller set of images used to test and validate the model's performance during training.
 These datasets were organized into a folder named dataset, where the images and their respective labels were stored.
 
+3. Video Processing & Prediction
+We upload the YOLO model (best.pt) that we trained to detect hornets and process video frames from the provided file. Each frame is passed through the YOLOv11 model, which is pre-trained on a dataset of Asian hornet images, to perform object detection.
+
+Frame Extraction:
+The system reads the input video feed frame by frame. When using a live camera feed, the system captures video frames in real-time; when using a pre-recorded video file, the frames are extracted sequentially from the file.
+
+Prediction Output:
+For each detected hornet, the YOLO model provides a confidence score, which indicates how certain the model is that the object within the bounding box is indeed an Asian hornet. A bounding box is a rectangular box around an object (in this case, the Asian Hornet) that helps us locate it in each frame.
+
+4. Once we had the model trained and were able to detect Asian Hornets in the videos, the next step was to track these hornets as they appeared across frames in real-time. For this, we used the SORT (Simple Online and Realtime Tracking) algorithm.
+ 
+SORT is a simple, efficient method that helps track multiple objects across frames in a video by using the bounding box coordinates that our YOLO model predicted. The track ID is assigned to each object (hornet) and is used to keep track of its movement throughout the video.
+ 
+Saving Data to the Database
+Once a hornet is detected and tracked, we save the details to the database. 
+
+
+5. Exporting the Model
+The model is then exported to a format that can be used for inference on raspberry pi. The chosen format in our case is ONNX (Open Neural Network Exchange), which is a popular format for exporting models to run on various hardware platforms, including edge devices like Raspberry Pi.
+```
+model.export(format="onnx")
+```
+It will be saved as best.onnx for deployment on Raspberry Pi. The exported ONNX model can be loaded and run on a Raspberry Pi or any device that supports ONNX runtime. After exporting the model, it can be used to make predictions in the deployment environment by running inference on live video streams or pre-recorded videos like we did locally.
+
+
 ## Pipeline
 The application is being build and provisioned automatically through GitHub Actions
 There is comments in the yaml files to explain what each part does.
