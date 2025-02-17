@@ -39,7 +39,6 @@ namespace BeeSafeWeb.Controllers
         /// </summary>
         public async Task<IActionResult> Index()
         {
-            _logger.LogDebug("Index action started.");
 
             // Retrieve approved devices.
             var devices = await Task.Run(() =>
@@ -57,17 +56,12 @@ namespace BeeSafeWeb.Controllers
                         d.Direction
                     })
                     .ToList());
-            _logger.LogDebug($"Fetched {devices.Count()} devices.");
 
             // Retrieve nest estimates from repository.
             var nestEstimates = await _nestLocationService.CalculateAndPersistNestLocationsAsync();
 
 
-            // (For debugging, you can log each nest estimate.)
-            foreach (var n in nestEstimates)
-            {
-                _logger.LogDebug($"NestEstimate: ID={n.Id}, Lat={n.EstimatedLatitude:F6}, Lon={n.EstimatedLongitude:F6}, Direction={n.Direction:F2}, IsDestroyed={n.IsDestroyed}");
-            }
+         
 
             // (Optionally filter by radius—currently commented out.)
             var filteredNestEstimates = nestEstimates.ToList();
@@ -82,11 +76,9 @@ namespace BeeSafeWeb.Controllers
                 LastUpdatedString = n.LastUpdatedString,
                 IsDestroyed = n.IsDestroyed
             }).ToList();
-            _logger.LogDebug("Passing device and nest data to the view.");
     
             ViewData["Devices"] = devices;
             ViewData["NestEstimates"] = nestData;
-            _logger.LogDebug("Index loaded with {DeviceCount} devices and {NestCount} nests", devices.Count, nestData.Count);
     
             return View();
         }
@@ -97,21 +89,18 @@ namespace BeeSafeWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateNestStatus(Guid id, bool isDestroyed)
         {
-            _logger.LogDebug("UpdateNestStatus called with id: {Id}, isDestroyed: {IsDestroyed}", id, isDestroyed);
 
             // Try finding the nest by ID first
             var nest = await _nestEstimateRepository.GetByIdAsync(id);
 
             if (nest == null)
             {
-                _logger.LogWarning("Nest not found by ID: {Id}, trying to find by closest match.", id);
 
                 // Retrieve all nests
                 var allNests = await _nestEstimateRepository.GetQueryable().ToListAsync();
 
                 if (!allNests.Any())
                 {
-                    _logger.LogWarning("No nests available to find a match.");
                     return NotFound("Nest not found.");
                 }
 
@@ -127,11 +116,9 @@ namespace BeeSafeWeb.Controllers
 
                 if (closestNest == null)
                 {
-                    _logger.LogWarning("No close nest found.");
                     return NotFound("Nest not found.");
                 }
 
-                _logger.LogDebug("Using closest nest: {ClosestNestId}", closestNest.Id);
                 nest = closestNest;
             }
 
@@ -139,7 +126,6 @@ namespace BeeSafeWeb.Controllers
             nest.IsDestroyed = isDestroyed;
             await _nestEstimateRepository.UpdateAsync(nest);
 
-            _logger.LogDebug("Nest updated. New IsDestroyed: {IsDestroyed}", isDestroyed);
             return RedirectToAction("Index");
         }
 
