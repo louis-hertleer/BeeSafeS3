@@ -36,7 +36,7 @@ namespace BeeSafeWeb.Data
                 },
                 new Device
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.Parse("4b9a002b-3725-4b74-b034-43e98bb52520"),
                     Latitude = 51.1700,
                     Longitude = 4.9850,
                     IsApproved = true,
