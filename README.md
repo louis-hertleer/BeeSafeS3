@@ -222,7 +222,7 @@ For each valid detection event:
   Using the dynamic hornet speed and correction factor, the estimated distance traveled by the hornet is computed.
 - **Direction Processing:**  
   The detected hornet direction is converted to radians. If the reverse bearing flag is enabled, the bearing is adjusted by 180°.
-- **Location Prediction:**  
+- **Location Prediction:** 
   Spherical trigonometry is applied (using concepts similar to the haversine formula) to predict the new latitude and longitude where the hornet nest might be located.
 - **Nest Estimate Creation:**  
   A nest estimate is created with the predicted coordinates, an accuracy value based on the estimated distance, and the final adjusted direction.
@@ -260,12 +260,14 @@ Below is a wiring diagram on how our prototype is wired:
 To be able to detect the hornets infront of the device, the solution uses a trained YOLO AI model.
 The model uses YOLOv11. It runs on the Raspberry Pi and will send data to the application. 
 
-1. Data Collection & Labelling
+1. **Data Collection & Labelling**
+   
 We began by capturing frames (taking screenshots) from the provided videos to create a dataset for training our object detection model. These frames were then labelled using [Label Studio](https://labelstud.io/guide/), an upen-soruce tool designed for labelling images and videos. 
 During this process, we focused solely on labelling Asian Hornets in the frames. Each hornet was marked with a bounding box which indicates the location of the hornet within the image. A class name was also assigned to each labeled object, in this case, “Asian Hornet.” The class name is used to distinguish different objects in the dataset (in our case, it’s just one class—Asian Hornet).
 After labeling, we exported both the images and the annotations (labels) using the YOLO format. This format includes the class name and the bounding box coordinates for each Asian Hornet. All images were stored in Google Drive, utilizing premium storage due to the large volume of data.
 
-2. Training with YOLOv11
+3. **Training with YOLOv11**
+   
 For model training, we used YOLOv11. Specifically, we trained the model using the YOLOv11n version, which is a lighter, faster variant optimized for smaller-scale datasets.
 Training was conducted on Google Colab, a cloud-based platform that provides free access to GPUs, making it easier to train deep learning models.
 
@@ -276,30 +278,38 @@ These datasets were organized into a folder named dataset, where the images and 
 
 <img width="65%" style="float:center;" src="https://github.com/user-attachments/assets/26d52e43-34b6-420f-9c52-136d22ffb909">
 
-3. Video Processing & Prediction
+3. **Video Processing & Prediction**
 We upload the YOLO model (best.pt) that we trained to detect hornets and process video frames from the provided file. Each frame is passed through the YOLOv11 model, which is pre-trained on a dataset of Asian hornet images, to perform object detection.
 
 Frame Extraction:
+
 The system reads the input video feed frame by frame. When using a live camera feed, the system captures video frames in real-time; when using a pre-recorded video file, the frames are extracted sequentially from the file.
 
 Prediction Output:
+
 For each detected hornet, the YOLO model provides a confidence score, which indicates how certain the model is that the object within the bounding box is indeed an Asian hornet. A bounding box is a rectangular box around an object (in this case, the Asian Hornet) that helps us locate it in each frame.
 
 4. Once we had the model trained and were able to detect Asian Hornets in the videos, the next step was to track these hornets as they appeared across frames in real-time. For this, we used the SORT (Simple Online and Realtime Tracking) algorithm.
  
 SORT is a simple, efficient method that helps track multiple objects across frames in a video by using the bounding box coordinates that our YOLO model predicted. The track ID is assigned to each object (hornet) and is used to keep track of its movement throughout the video.
  
-Saving Data to the Database
+**Saving Data to the Database**
 Once a hornet is detected and tracked, we save the details to the database. 
 
 
-5. Exporting the Model
+5. **Exporting the Model**
 The model is then exported to a format that can be used for inference on raspberry pi. The chosen format in our case is ONNX (Open Neural Network Exchange), which is a popular format for exporting models to run on various hardware platforms, including edge devices like Raspberry Pi.
 ```
 model.export(format="onnx")
 ```
 It will be saved as best.onnx for deployment on Raspberry Pi. The exported ONNX model can be loaded and run on a Raspberry Pi or any device that supports ONNX runtime. After exporting the model, it can be used to make predictions in the deployment environment by running inference on live video streams or pre-recorded videos like we did locally.
 
+Once you have access to the Raspberry Pi, you need to copy all the necessary files (including the trained YOLO model and Python scripts). 
+
+Do not forget to install the ONNX Runtime on the Raspberry Pi:
+```
+pip install onnxruntime
+```
 
 ## Pipeline
 The application is being build and provisioned automatically through GitHub Actions
