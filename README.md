@@ -298,6 +298,12 @@ model.export(format="onnx")
 ```
 It will be saved as best.onnx for deployment on Raspberry Pi. The exported ONNX model can be loaded and run on a Raspberry Pi or any device that supports ONNX runtime. After exporting the model, it can be used to make predictions in the deployment environment by running inference on live video streams or pre-recorded videos like we did locally.
 
+Once you have access to the Raspberry Pi, you need to copy all the necessary files (including the trained YOLO model and Python scripts). 
+
+Do not forget to install the ONNX Runtime on the Raspberry Pi:
+```
+pip install onnxruntime
+```
 
 ## Pipeline
 The application is being build and provisioned automatically through GitHub Actions
