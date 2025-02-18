@@ -266,7 +266,7 @@ We began by capturing frames (taking screenshots) from the provided videos to cr
 During this process, we focused solely on labelling Asian Hornets in the frames. Each hornet was marked with a bounding box which indicates the location of the hornet within the image. A class name was also assigned to each labeled object, in this case, “Asian Hornet.” The class name is used to distinguish different objects in the dataset (in our case, it’s just one class—Asian Hornet).
 After labeling, we exported both the images and the annotations (labels) using the YOLO format. This format includes the class name and the bounding box coordinates for each Asian Hornet. All images were stored in Google Drive, utilizing premium storage due to the large volume of data.
 
-3. **Training with YOLOv11**
+2. **Training with YOLOv11**
    
 For model training, we used YOLOv11. Specifically, we trained the model using the YOLOv11n version, which is a lighter, faster variant optimized for smaller-scale datasets.
 Training was conducted on Google Colab, a cloud-based platform that provides free access to GPUs, making it easier to train deep learning models.
