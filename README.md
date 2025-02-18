@@ -276,8 +276,9 @@ To facilitate training, we created a data.yaml file, which defines the paths to 
     - Validation Set: A smaller set of images used to test and validate the model's performance during training.
 These datasets were organized into a folder named dataset, where the images and their respective labels were stored.
 
+<img width="65%" style="float:center;" src="https://github.com/user-attachments/assets/26d52e43-34b6-420f-9c52-136d22ffb909">
+
 3. **Video Processing & Prediction**
-   
 We upload the YOLO model (best.pt) that we trained to detect hornets and process video frames from the provided file. Each frame is passed through the YOLOv11 model, which is pre-trained on a dataset of Asian hornet images, to perform object detection.
 
 Frame Extraction:
